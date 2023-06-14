@@ -1,0 +1,49 @@
+openapi: 3.0.1
+info:
+  title: RestRserve OpenAPI
+  version: '1.0'
+servers:
+  - url: /
+paths:
+  /exampledata:
+    get:
+      description: Retrieve exmple datasets (nhanes, nhanes2)
+      parameters:
+        - name: "name"
+          description: "Example Dataset name (nhanes or nhanes2)"
+          in: query
+          schema:
+            type: string
+          example: "nhanes"
+          required: true
+      responses:
+        200:
+          description: API response
+          content:
+            text/json:
+              schema:
+                type: string
+                example: {"age":[1,2,1],"bmi":[null,22.7,null],"hyp":[null,1,1],"chl":[null,187,187]}
+        400:
+          description: Bad Request, not a valid example dataset.
+  /imputation:
+    get:
+      description: Run mice imputation on a datasets (nhanes, nhanes2)
+      parameters:
+        - name: "payload"
+          description: "Json with keys \"data\", \"maxit\", \"m\", \"seed\"" 
+          in: query
+          schema:
+            type: string
+          example: "{\"data\":\"nhanes\",\"maxit\":2,\"m\":2,\"seed\":1}"
+          required: true
+      responses:
+        200:
+          description: API response
+          content:
+            text/json:
+              schema:
+                type: string
+                example: "{\"age\":{\"1\":[],\"2\":[]},\"bmi\":{\"1\":[30.1,33.2,27.4],\"2\":[30.1,27.2,21.7]},\"hyp\":{\"1\":[1,2,1],\"2\":[1,2,2]},\"chl\":{\"1\":[187,218,238],\"2\":[187,218,187]}}"
+        400:
+          description: Bad Request.
