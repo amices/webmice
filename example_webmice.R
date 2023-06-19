@@ -34,6 +34,41 @@ list_to_micedf = function(data){
   return(NULL)
 }
 
+imp_to_json = function(imp){
+  #to list
+  jsonlist <- NULL
+  #6 is a call not a data structure; toJSON(toString(imp[6]))
+  for (i in 1:length(imp)){
+    result = tryCatch({
+      jsonlist[i] = toJSON(imp[i])
+    }, error = function(e){ return(FALSE) })
+
+    if( result == FALSE){
+      tmp <- c(toString(imp[i]))
+      names(tmp) <- names(imp[i])
+      jsonlist[i] = toJSON(tmp)
+    }
+  }
+  return(toJSON(jsonlist))
+}
+
+json_to_imp = function(impjson){
+  jsonlist <- fromJSON(impjson)
+  data_list <- NULL
+  names <- c()
+  for (i in 1:length(jsonlist)){
+    elem <- fromJSON(jsonlist[i])
+    names[i] <- names(elem)[1]
+    data_list[i] <- elem
+  }
+  names(data_list) <- names
+  
+  #TODO: convert data to data frame, inspect other properties for formatting etc
+  return(data_list)
+}
+
+
+
 # Calls mice with parameters provided in a list 'params'
 # Expected: params$data, params$maxit, params$m, params$seed
 # data: "nhanes", "nhanes2", or a list that can be turned into a data.frame
