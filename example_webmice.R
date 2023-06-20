@@ -30,11 +30,13 @@ list_to_micedf = function(data){
   # > imp <- mice(df, maxit = params$maxit, m = params$m, seed = params$seed)
   #Error in edit.setup(data, setup, ...) : 
   #  `mice` detected constant and/or collinear variables. No predictors were left after their removal.
-  print("not implemented")
+  print("DEBUG: not implemented")
   return(NULL)
 }
 
 # Turn imp object to a json
+# imp <- mice(nhanes, maxit = 2, m = 2, seed = 1)
+# impjson <- imp_to_json(imp)
 imp_to_json = function(imp){
   #to list
   jsonlist <- NULL
@@ -53,6 +55,7 @@ imp_to_json = function(imp){
   return(toJSON(jsonlist))
 }
 
+# Turn an impjson to imp again
 json_to_imp = function(impjson){
   jsonlist <- fromJSON(impjson)
   data_list <- NULL
@@ -68,13 +71,15 @@ json_to_imp = function(impjson){
   return(data_list)
 }
 
-load_csv = function(path){
-  tryCatch({
-    data <- read.csv(path)
-    return(data)
-  }, error = function(e){
-    return(NULL)
-  })
+read_file = function(path){
+  if(endswith(path, ".csv")){
+    tryCatch({
+      data <- read.csv(path)
+      return(data)
+    }, error = function(e){
+      return(NULL)
+    })
+  }
 }
 
 # Calls mice with parameters provided in a list 'params'
@@ -83,49 +88,68 @@ load_csv = function(path){
 call_mice = function(params){
   imp <- list()
   imp$error <- ""
-  print(imp)
   if(all(params$data == "nhanes")) {
-    print("Calculating on nhanes")
+    print("DEBUG: Calculating on nhanes")
     result = tryCatch({
       imp <- mice(nhanes, maxit = params$maxit, m = params$m, 
                   seed = params$seed)
       return(imp)
       }, error = function(e)  {
-        imp$error <- "Failure: mice-nhanes"
-        return(imp)
+        return("Failure: mice-nhanes")
       })
+    if(result == "Failure: mice-nhanes"){
+      imp$error <- result
+      return(imp)
     }
+  } 
+
   if(all(params$data == "nhanes2")){
-    print("Calculating on nhanes2")
+    print("DEBUG: Calculating on nhanes2")
     result = tryCatch({
       imp <- mice(nhanes2, maxit = params$maxit, m = params$m, 
                   seed = params$seed)
       return(imp)
     }, error = function(e)  {
-      imp$error <- "Failure: mice-nhanes2"
-      return(imp)
+      return("Failure: mice-nhanes2")
     })
+    if(result == "Failure: mice-nhanes2"){
+      imp$error <- result
+      return(imp)
+    }
   }
+
   # Full local path of a csv file, needs to be present on the server
   if(typeof(params$data) == "character" && endsWith(params$data, ".csv")){
-    print("Load csv")
-    df = load_csv(params$data)
+    print("DEBUG: Read csv")
+    result = tryCatch({
+      df = read_file(params$data)
+    }, error = function(e)  {
+       print("Error")
+       return("Failure: reading csv file, path not known")
+    })
+    if(result == "Failure: reading csv file, path not known"){
+      imp$error <- result
+      return(imp)
+    }
     if(is.null(df)) {
       imp$error <- "Failure: reading csv file"
-      return(imp$error)
+      return(imp)
     }
     result = tryCatch({
       imp <- mice(df, maxit = params$maxit, m = params$m,
                   seed = params$seed)
       return(imp)
     }, error = function(e)  {
+      return("Failure: mice-csvfile")
+    })
+    if(result == "Failure: mice-csvfile"){
       imp$error <- "Failure: mice-csvfile"
       return(imp)
-    })
+    }
   }
   # Data encoded as json.
   if(typeof(params$data) == "list"){
-    print("Convert json to df")
+    print("DEBUG: Convert json to df")
     result = tryCatch({
       #TODO: data is not correctly converted from json to df
       df = list_to_micedf(params$data)
@@ -136,10 +160,13 @@ call_mice = function(params){
       imp <- mice(df, maxit = params$maxit, m = params$m, 
                   seed = params$seed)
       return(imp)
-    }, error = function(e)  {
+      }, error = function(e)  {
+        return("Failure: mice-jsondata")
+    })
+    if(result == "Failure: mice-jsondata"){
       imp$error <- "Failure: mice-jsondata"
       return(imp)
-    })
+    }
   }
   imp$error <- "Dataset not known"
   return(imp)
@@ -158,18 +185,8 @@ impute_handler = function(.req, .res) {
   if(is.null(params$m)) {raise(HTTPError$not_acceptable())}
   if(is.null(params$seed)) {raise(HTTPError$not_acceptable())}
   
-  print("Calling mice with")
-  print(params)
+  print("DEBUG: Calling mice")
   imp <- call_mice(params = params)
-  print(imp) 
-  #if(typeof(imp) == "character") {
-  #  if (grepl("mice", imp)){raise(HTTPError$error)} # mice failed
-  #  if (imp == "Failure: reading json data"){
-  #      raise(HTTPError$unsupported_media_type)} #json malformatted
-  #  if (imp == "Failure: reading csv file"){
-  #    print(imp)
-  #    raise(HTTPError$not_found)} #csv file not found
-  #}
   
   .res$set_body(imp_to_json(imp = imp))
   .res$set_content_type("text/plain")
@@ -184,7 +201,6 @@ example_data_handler = function(.req, .res) {
   .res$set_body(example_data_to_json(example_name))
   .res$set_content_type("text/plain")
 }
-
 
 webmice$add_get(path = "/exampledata", FUN = example_data_handler)
 webmice$add_get(path = "/imputation", FUN = impute_handler)
