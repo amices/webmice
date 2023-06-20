@@ -1,7 +1,9 @@
 library(mice, warn.conflicts = FALSE)
 library(RestRserve)
 library(rjson)
+library(readr)
 webmice = Application$new()
+webmice_folder = "/Users/staig001/git-repos/micetestrestapi/testdata/upload"
 
 # Fetches example data from mice, returns data as json
 example_data_to_json = function(name) {
@@ -202,6 +204,30 @@ example_data_handler = function(.req, .res) {
   .res$set_content_type("text/plain")
 }
 
+# Uploads a file and stores it in webmice_folder
+#TODO: Swagger does not work with this function
+#library(httr)
+#tmp = "testdata/nhanes.csv"
+#rs <- POST(url = "http:/127.0.0.1:8080/data", body = list(csvfile = upload_file(tmp)), encode = "multipart")
+webmice$add_post(
+  path = "/data",
+  FUN = function(request, response) {
+  # for debug
+  print(request$parameters_body)
+  #str(request$files)
+  # extract multipart body field
+  cnt <- request$get_file("csvfile") # 'csv' from the upload form field
+  # parse CSV
+  dt <- read_csv(cnt)
+  tmp = file.path(webmice_folder, request$parameters_body$csvfile)
+  print(tmp)
+  write_csv(dt, tmp)
+
+  # set output body
+  response$set_body("Data received") # or simply response$set_body(format_csv(dt))
+  response$set_content_type("text/plain")
+  }
+)
 webmice$add_get(path = "/exampledata", FUN = example_data_handler)
 webmice$add_get(path = "/imputation", FUN = impute_handler)
 yaml_file = "./openapi.yaml"

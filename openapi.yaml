@@ -47,3 +47,32 @@ paths:
                 example: "{\"age\":{\"1\":[],\"2\":[]},\"bmi\":{\"1\":[30.1,33.2,27.4],\"2\":[30.1,27.2,21.7]},\"hyp\":{\"1\":[1,2,1],\"2\":[1,2,2]},\"chl\":{\"1\":[187,218,238],\"2\":[187,218,187]}}"
         400:
           description: Bad Request.
+  /data:
+    post:
+      summary: Uploads a csv - file
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: csvfile
+          in: formData
+          description: Upload csv-file
+          required: true
+          type: file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                csvfile:
+                  type: string
+                  format: binary
+        responseBody:
+
+        responses:
+          200:
+            description: API response
+            content:
+              text/plain:
+                schema:
+                  type: string
