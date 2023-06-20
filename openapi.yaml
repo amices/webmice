@@ -10,7 +10,7 @@ paths:
       description: Retrieve exmple datasets (nhanes, nhanes2)
       parameters:
         - name: "name"
-          description: "Example Dataset name (nhanes or nhanes2)"
+          description: "Example Dataset name (nhanes or nhanes2), or full path of the csv file"
           in: query
           schema:
             type: string
