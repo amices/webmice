@@ -3,7 +3,8 @@ library(RestRserve)
 library(rjson)
 library(readr)
 webmice = Application$new()
-webmice_folder = "/Users/staig001/git-repos/micetestrestapi/testdata/upload"
+base_folder = file.path("path", "to", "repository", "micetestrestapi")
+webmice_folder = file.path(base_folder, "testdata", "upload")
 
 # Fetches example data from mice, returns data as json
 example_data_to_json = function(name) {
@@ -230,7 +231,7 @@ webmice$add_post(
 )
 webmice$add_get(path = "/exampledata", FUN = example_data_handler)
 webmice$add_get(path = "/imputation", FUN = impute_handler)
-yaml_file = "./openapi.yaml"
+yaml_file = file.path(base_folder, "openapi.yaml")
 webmice$add_openapi(path = "/openapi.yaml", file_path = yaml_file)
 webmice$add_swagger_ui(path = "/doc", path_openapi = "/openapi.yaml", use_cdn = TRUE)
 
