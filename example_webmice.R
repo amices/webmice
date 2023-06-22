@@ -26,14 +26,9 @@ json_to_input = function(json_payload){
   })
 }
 
-list_to_micedf = function(data){
-  #TODO: take a look at conversion from json to dataframe
-  #df <- data.frame(age=unlist(params$data$age), bmi=unlist(params$data$bmi), 
-  #                 hyp=unlist(params$data$hyp), chl=unlist(params$data$chl))
-  #df[l == "NA"] = NA
-  # > imp <- mice(df, maxit = params$maxit, m = params$m, seed = params$seed)
-  #Error in edit.setup(data, setup, ...) : 
-  #  `mice` detected constant and/or collinear variables. No predictors were left after their removal.
+list_to_df = function(data){
+  df <- data.frame(age=unlist(data_list$data$age), bmi=as.numeric(unlist(data_list$data$bmi)), 
+                 hyp=as.numeric(unlist(data_list$data$hyp)), chl=as.numeric(unlist(data_list$data$chl)))
   print("DEBUG: not implemented")
   return(NULL)
 }
