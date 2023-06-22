@@ -3,8 +3,9 @@ library(RestRserve)
 library(rjson)
 library(readr)
 webmice = Application$new()
-base_folder = file.path("path", "to", "repository", "micetestrestapi")
-webmice_folder = file.path(base_folder, "testdata", "upload")
+base_folder = file.path("", "home", "webmice") #used for data uploads
+print(base_folder)
+webmice_folder = file.path(base_folder, "testdata", "upload") #used for data uploads
 
 # Fetches example data from mice, returns data as json
 example_data_to_json = function(name) {
