@@ -26,7 +26,7 @@ Navigate to your browser http://localhost:8080/doc
 
 ```
 docker build -t webmice -f docker/Dockerfile .
-docker run -it -p 8080:8080 -v </path/tp/your local/datafolder>:/home/webmice/testdata webmice
+docker run -it -p 8080:8080 -v </path/to/local/datafolder>:/home/webmice/testdata webmice
 # get a shell inside of the docker image for debugging
 docker exec -it webmice bash
 ```

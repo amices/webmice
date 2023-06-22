@@ -120,6 +120,7 @@ call_mice = function(params){
   # Full local path of a csv file, needs to be present on the server
   if(typeof(params$data) == "character" && endsWith(params$data, ".csv")){
     print("DEBUG: Read csv")
+    print(params$data)
     result = tryCatch({
       df = read_file(params$data)
     }, error = function(e)  {
