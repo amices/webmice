@@ -75,7 +75,7 @@ json_to_imp = function(impjson){
 }
 
 read_file = function(path){
-  if(endswith(path, ".csv")){
+  if(endsWith(path, ".csv")){
     tryCatch({
       data <- read.csv(path)
       return(data)
@@ -127,10 +127,9 @@ call_mice = function(params){
     result = tryCatch({
       df = read_file(params$data)
     }, error = function(e)  {
-       print("Error")
        return("Failure: reading csv file, path not known")
     })
-    if(result == "Failure: reading csv file, path not known"){
+    if(typeof(result) == "character"){
       imp$error <- result
       return(imp)
     }
@@ -147,27 +146,6 @@ call_mice = function(params){
     })
     if(result == "Failure: mice-csvfile"){
       imp$error <- "Failure: mice-csvfile"
-      return(imp)
-    }
-  }
-  # Data encoded as json.
-  if(typeof(params$data) == "list"){
-    print("DEBUG: Convert json to df")
-    result = tryCatch({
-      #TODO: data is not correctly converted from json to df
-      df = list_to_micedf(params$data)
-      if(is.null(df)){
-        imp$error <- "Failure: reading json data"
-        return(imp)
-      }
-      imp <- mice(df, maxit = params$maxit, m = params$m, 
-                  seed = params$seed)
-      return(imp)
-      }, error = function(e)  {
-        return("Failure: mice-jsondata")
-    })
-    if(result == "Failure: mice-jsondata"){
-      imp$error <- "Failure: mice-jsondata"
       return(imp)
     }
   }
