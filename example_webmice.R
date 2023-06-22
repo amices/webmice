@@ -74,7 +74,7 @@ json_to_imp = function(impjson){
 }
 
 read_file = function(path){
-  if(endswith(path, ".csv")){
+  if(endsWith(path, ".csv")){
     tryCatch({
       data <- read.csv(path)
       return(data)
@@ -126,10 +126,9 @@ call_mice = function(params){
     result = tryCatch({
       df = read_file(params$data)
     }, error = function(e)  {
-       print("Error")
        return("Failure: reading csv file, path not known")
     })
-    if(result == "Failure: reading csv file, path not known"){
+    if(typeof(result) == "character"){
       imp$error <- result
       return(imp)
     }
