@@ -21,7 +21,6 @@ COPY example_webmice.R /home/webmice/example_webmice.R
 COPY ../openapi.yaml /home/webmice/openapi.yaml
 
 WORKDIR /home/webmice
-# Rscript example_webmice.R
 CMD ["Rscript", "example_webmice.R"]
 
 EXPOSE 8080

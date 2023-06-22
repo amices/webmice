@@ -3,7 +3,9 @@ library(RestRserve)
 library(rjson)
 library(readr)
 webmice = Application$new()
-webmice_folder = "/Users/staig001/git-repos/micetestrestapi/testdata/upload"
+base_folder = file.path("", "home", "webmice") #used for data uploads
+print(base_folder)
+webmice_folder = file.path(base_folder, "testdata", "upload") #used for data uploads
 
 # Fetches example data from mice, returns data as json
 example_data_to_json = function(name) {
@@ -24,14 +26,9 @@ json_to_input = function(json_payload){
   })
 }
 
-list_to_micedf = function(data){
-  #TODO: take a look at conversion from json to dataframe
-  #df <- data.frame(age=unlist(params$data$age), bmi=unlist(params$data$bmi), 
-  #                 hyp=unlist(params$data$hyp), chl=unlist(params$data$chl))
-  #df[l == "NA"] = NA
-  # > imp <- mice(df, maxit = params$maxit, m = params$m, seed = params$seed)
-  #Error in edit.setup(data, setup, ...) : 
-  #  `mice` detected constant and/or collinear variables. No predictors were left after their removal.
+list_to_df = function(data){
+  df <- data.frame(age=unlist(data_list$data$age), bmi=as.numeric(unlist(data_list$data$bmi)), 
+                 hyp=as.numeric(unlist(data_list$data$hyp)), chl=as.numeric(unlist(data_list$data$chl)))
   print("DEBUG: not implemented")
   return(NULL)
 }
@@ -123,6 +120,7 @@ call_mice = function(params){
   # Full local path of a csv file, needs to be present on the server
   if(typeof(params$data) == "character" && endsWith(params$data, ".csv")){
     print("DEBUG: Read csv")
+    print(params$data)
     result = tryCatch({
       df = read_file(params$data)
     }, error = function(e)  {
@@ -208,7 +206,7 @@ webmice$add_post(
 )
 webmice$add_get(path = "/exampledata", FUN = example_data_handler)
 webmice$add_get(path = "/imputation", FUN = impute_handler)
-yaml_file = "./openapi.yaml"
+yaml_file = file.path(base_folder, "openapi.yaml")
 webmice$add_openapi(path = "/openapi.yaml", file_path = yaml_file)
 webmice$add_swagger_ui(path = "/doc", path_openapi = "/openapi.yaml", use_cdn = TRUE)
 
