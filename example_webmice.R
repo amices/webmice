@@ -148,27 +148,6 @@ call_mice = function(params){
       return(imp)
     }
   }
-  # Data encoded as json.
-  if(typeof(params$data) == "list"){
-    print("DEBUG: Convert json to df")
-    result = tryCatch({
-      #TODO: data is not correctly converted from json to df
-      df = list_to_micedf(params$data)
-      if(is.null(df)){
-        imp$error <- "Failure: reading json data"
-        return(imp)
-      }
-      imp <- mice(df, maxit = params$maxit, m = params$m, 
-                  seed = params$seed)
-      return(imp)
-      }, error = function(e)  {
-        return("Failure: mice-jsondata")
-    })
-    if(result == "Failure: mice-jsondata"){
-      imp$error <- "Failure: mice-jsondata"
-      return(imp)
-    }
-  }
   imp$error <- "Dataset not known"
   return(imp)
 }
