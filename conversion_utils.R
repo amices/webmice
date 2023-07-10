@@ -15,23 +15,20 @@ json_to_mids <- function(json) {
            # data={data <- parseData(row)},
            # imp={imp <- parseImp(row)},
            m = {m <- as.integer(fromJSON(row))},
-           # where={where <- parseWhere(row)},
-           # blocks = blocks,
+           where = {where <- as.logical(fromJSON(row)$where)},
+           blocks = {blocks <- lapply(fromJSON(row)$blocks, function(x) {as.character(x)})},
            # call = call,
            nmis = {nmis <- lapply(fromJSON(row)$nmis, function(x) {as.integer(x)})},
            # method = method,
-           # predictorMatrix = predictorMatrix,
-           # visitSequence = visitSequence,
+           predictorMatrix = {predictorMatrix <- as.numeric(fromJSON(row)$predictorMatrix)},
+           visitSequence = {visitSequence <- as.character(fromJSON(row)$visitSequence)},
            # formulas = formulas,
-           # post = post,
+           post = {post <- lapply(fromJSON(row)$post, function(x) {as.character(x)})},
            # blots = blots,
-           # ignore = ignore,
+           ignore = {ignore <- as.logical(fromJSON(row)$ignore)},
            seed = {seed <- as.integer(fromJSON(row))},
            iteration = {iteration <- as.integer(fromJSON(row))},
-           # lastSeedValue = get(".Random.seed",
-           #                     envir = globalenv(), mode = "integer",
-           #                     inherits = FALSE
-           # ),
+           lastSeedValue = {lastSeedValue <- as.integer(fromJSON(row)$lastSeedValue)},
            # chainMean = q$chainMean,
            # chainVar = q$chainVar,
            # loggedEvents = loggedEvents,
@@ -51,26 +48,28 @@ json_to_mids <- function(json) {
   #              paste(attr_list[!attr_exist], collapse = ', ')))
   # }
 
+  # Optionally do some additional sanity checks here, like dimensions, etc.
+
   # Reconstruct data
   midsobj <- list(
     # TODO:
     # data = data,
     # imp = imp,
     m = m,
-    # where = where,
-    # blocks = blocks,
+    where = where, # should this be a proper matrix?
+    blocks = blocks,
     # call = call,
     nmis = nmis,
     # method = method,
-    # predictorMatrix = predictorMatrix,
-    # visitSequence = visitSequence,
+    predictorMatrix = predictorMatrix, # should this be a proper matrix? 
+    visitSequence = visitSequence,
     # formulas = formulas,
-    # post = post,
+    post = post,
     # blots = blots,
-    # ignore = ignore,
+    ignore = ignore,
     seed = seed,
-    iteration = iteration
-    # lastSeedValue = lastSeedValue,
+    iteration = iteration,
+    lastSeedValue = lastSeedValue
     # chainMean = chainMean,
     # chainVar = chainVar,
     # loggedEvents = loggedEvents,
