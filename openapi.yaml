@@ -58,21 +58,10 @@ paths:
           description: Upload csv-file
           required: true
           type: file
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                csvfile:
-                  type: string
-                  format: binary
-        responseBody:
-
-        responses:
-          200:
-            description: API response
-            content:
-              text/plain:
-                schema:
-                  type: string
+      responses:
+        200:
+          description: API response
+          content:
+            text/plain:
+              schema:
+              type: string
