@@ -50,14 +50,16 @@ paths:
   /data:
     post:
       summary: Uploads a csv - file
-      consumes:
-        - multipart/form-data
-      parameters:
-        - name: csvfile
-          in: formData
-          description: Upload csv-file
-          required: true
-          type: file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                csvfile:
+                  type: string
+                  format: binary
+           
       responses:
         200:
           description: API response
