@@ -2,6 +2,8 @@ library(mice, warn.conflicts = FALSE)
 library(RestRserve)
 library(rjson)
 library(readr)
+library(digest)
+
 webmice = Application$new()
 base_folder = file.path("", "home", "webmice") #used for data uploads
 print(base_folder)
@@ -71,13 +73,27 @@ json_to_imp = function(impjson){
 }
 
 read_file = function(path){
-  if(endsWith(path, ".csv")){
     tryCatch({
       data <- read.csv(path)
       return(data)
     }, error = function(e){
       return(NULL)
     })
+}
+
+impute = function(data, maxit, m, seed) {
+  imp <- list()
+  imp$error <- ""
+  result = tryCatch({
+    imp <- mice(data, maxit = maxit, m = m, seed = seed)
+    return(imp)
+  }, error = function(e) {
+    return("Failure: mice")
+  })
+
+  if(result == "Failure: mice"){
+    imp$error <- result
+    return(imp)
   }
 }
 
@@ -86,68 +102,42 @@ read_file = function(path){
 # data: "nhanes", "nhanes2", or a list that can be turned into a data.frame
 call_mice = function(params){
   imp <- list()
-  imp$error <- ""
-  if(all(params$data == "nhanes")) {
-    print("DEBUG: Calculating on nhanes")
-    result = tryCatch({
-      imp <- mice(nhanes, maxit = params$maxit, m = params$m, 
-                  seed = params$seed)
-      return(imp)
-      }, error = function(e)  {
-        return("Failure: mice-nhanes")
-      })
-    if(result == "Failure: mice-nhanes"){
-      imp$error <- result
-      return(imp)
-    }
-  } 
+  result = tryCatch({
+    data <- get(params$data)
+  }, error = function(e){
+    return(-1)
+  })
 
-  if(all(params$data == "nhanes2")){
-    print("DEBUG: Calculating on nhanes2")
-    result = tryCatch({
-      imp <- mice(nhanes2, maxit = params$maxit, m = params$m, 
+  if(typeof(result) == "list") {
+    print("DEBUG: Calculating on example data set")
+    imp <- impute(data, maxit = params$maxit, m = params$m,
                   seed = params$seed)
-      return(imp)
-    }, error = function(e)  {
-      return("Failure: mice-nhanes2")
-    })
-    if(result == "Failure: mice-nhanes2"){
-      imp$error <- result
-      return(imp)
-    }
+    return(imp)
   }
-
   # Full local path of a csv file, needs to be present on the server
   if(typeof(params$data) == "character" && endsWith(params$data, ".csv")){
     print("DEBUG: Read csv")
-    print(params$data)
-    result = tryCatch({
-      df = read_file(params$data)
-    }, error = function(e)  {
-       return("Failure: reading csv file, path not known")
-    })
-    if(typeof(result) == "character"){
-      imp$error <- result
+    df = read_file(params$data)
+    if(is.null(df)){
+      imp$error <- "Failure: reading local csv file"
       return(imp)
     }
-    if(is.null(df)) {
-      imp$error <- "Failure: reading csv file"
-      return(imp)
-    }
-    result = tryCatch({
-      imp <- mice(df, maxit = params$maxit, m = params$m,
+    imp <- impute(nhanes, maxit = params$maxit, m = params$m,
                   seed = params$seed)
-      return(imp)
-    }, error = function(e)  {
-      return("Failure: mice-csvfile")
-    })
-    if(result == "Failure: mice-csvfile"){
-      imp$error <- "Failure: mice-csvfile"
+    return(imp)
+  }
+  # Retrieve uploaded csv file by hash
+  if(typeof(params$data) == "character"){
+    print("DEBUG: Retrieve uploaded file")
+    df = read_file(file.path(webmice_folder, params$data))
+    if(is.null(df)){
+      imp$error <- "Failure: reading file on server"
       return(imp)
     }
+    imp <- impute(nhanes, maxit = params$maxit, m = params$m,
+                  seed = params$seed)
+    return(imp)
   }
-  imp$error <- "Dataset not known"
-  return(imp)
 }
 
 impute_handler = function(.req, .res) {
@@ -180,30 +170,34 @@ example_data_handler = function(.req, .res) {
   .res$set_content_type("text/plain")
 }
 
+md5_string = function(string) {
+  return(digest(paste(Sys.time(), string), algo="md5", serialize=F))
+}
+
 # Uploads a file and stores it in webmice_folder
 #TODO: Swagger does not work with this function
 #library(httr)
 #tmp = "testdata/nhanes.csv"
 #rs <- POST(url = "http:/127.0.0.1:8080/data", body = list(csvfile = upload_file(tmp)), encode = "multipart")
+# Returns a data_token
+# token <- rs$headers$data_token
 webmice$add_post(
   path = "/data",
   FUN = function(request, response) {
-  # for debug
-  print(request$parameters_body)
-  #str(request$files)
-  # extract multipart body field
-  cnt <- request$get_file("csvfile") # 'csv' from the upload form field
-  # parse CSV
-  dt <- read_csv(cnt)
-  tmp = file.path(webmice_folder, request$parameters_body$csvfile)
-  print(tmp)
-  write_csv(dt, tmp)
-
-  # set output body
-  response$set_body("Data received") # or simply response$set_body(format_csv(dt))
-  response$set_content_type("text/plain")
+    cnt <- request$get_file("csvfile") # 'csv' from the upload form field
+    # parse CSV
+    dt <- read_csv(cnt)
+    hash <- md5_string(request$parameters_body$csvfile)
+    tmp = file.path(webmice_folder, hash)
+    print(tmp)
+    write_csv(dt, tmp)
+    
+    # set output body
+    response$append_header("data_token", hash)
   }
 )
+
+
 webmice$add_get(path = "/exampledata", FUN = example_data_handler)
 webmice$add_get(path = "/imputation", FUN = impute_handler)
 yaml_file = file.path(base_folder, "openapi.yaml")
