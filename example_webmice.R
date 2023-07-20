@@ -184,9 +184,14 @@ md5_string = function(string) {
 webmice$add_post(
   path = "/data",
   FUN = function(request, response) {
+    print(str(request$body))
+    print(str(request$files))
+    print(request$parameters_body$csvfile)
     cnt <- request$get_file("csvfile") # 'csv' from the upload form field
     # parse CSV
+    print(cnt)
     dt <- read_csv(cnt)
+    print(dt)
     hash <- md5_string(request$parameters_body$csvfile)
     tmp = file.path(webmice_folder, hash)
     print(tmp)
