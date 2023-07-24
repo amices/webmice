@@ -12,15 +12,20 @@ webmice_folder = file.path(base_folder, "testdata", "upload") #used for data upl
 
 # Fetches example data from mice, returns data as json
 example_data_to_json = function(name) {
-  if(name == "nhanes") return(toJSON(nhanes))
-  if(name == "nhanes2") return(toJSON(nhanes2))
+  print("Example data")
+  result = tryCatch({
+    return(toJSON(get(name)))
+  }, error = function(e)  {
+    return("Error: data name not found")
+  })
+  return(result)
 }
 
 # Takes a json string and returns it as R list 
 # Test:
 # input <- list(data = "nhanes", maxit = 2, m = 2, seed = 1)
-# result <- json_to_input(to_json(input))
-json_to_input = function(json_payload){
+# result <- json_to_parameters(to_json(input))
+json_to_parameters = function(json_payload){
   result = tryCatch({
     params = fromJSON(json_payload)
     return(params)
@@ -29,32 +34,15 @@ json_to_input = function(json_payload){
   })
 }
 
-list_to_df = function(data){
-  df <- data.frame(age=unlist(data_list$data$age), bmi=as.numeric(unlist(data_list$data$bmi)), 
-                 hyp=as.numeric(unlist(data_list$data$hyp)), chl=as.numeric(unlist(data_list$data$chl)))
-  print("DEBUG: not implemented")
-  return(NULL)
-}
-
 # Turn imp object to a json
 # imp <- mice(nhanes, maxit = 2, m = 2, seed = 1)
 # impjson <- imp_to_json(imp)
 imp_to_json = function(imp){
-  #to list
-  jsonlist <- NULL
-  #6 is a call not a data structure; toJSON(toString(imp[6]))
-  for (i in 1:length(imp)){
-    result = tryCatch({
-      jsonlist[i] = toJSON(imp[i])
-    }, error = function(e){ return(FALSE) })
+  return(toJSON(imp, force = TRUE))
+}
 
-    if( result == FALSE){
-      tmp <- c(toString(imp[i]))
-      names(tmp) <- names(imp[i])
-      jsonlist[i] = toJSON(tmp)
-    }
-  }
-  return(toJSON(jsonlist))
+complete_data_as_json = function(imp){
+  return(toJSON(complete(imp)))
 }
 
 # Turn an impjson to imp again
@@ -87,7 +75,7 @@ impute = function(data, maxit, m, seed) {
   imp$error <- ""
   result = tryCatch({
     imp <- mice(data, maxit = maxit, m = m, seed = seed)
-    return(imp)
+    return(complete_data_as_json(imp))
   }, error = function(e) {
     return("Failure: mice")
   })
@@ -141,12 +129,29 @@ call_mice = function(params){
   }
 }
 
+call_with = function(input){
+  # input = complete(imp)
+  fit <- with(input, lm(chl ~ age + bmi))
+  return(toJSON(fit, force=TRUE))
+}
+
+fit_handler = function(.req, .res) {
+  json_payload = as.character(.req$parameters_query[["payload"]])
+  if (length(json_payload) == 0L) {raise(HTTPError$bad_request())}
+  params <- json_to_parameters(json_payload)
+  if(is.null(params)) {HTTPError$not_acceptable()}
+  print("DEBUG: Calling with (fitting function)")
+  fitJson <- call_with(params)
+  .res$set_body(fitJson)
+  .res$set_content_type("text/plain")
+}
+
 impute_handler = function(.req, .res) {
   json_payload = as.character(.req$parameters_query[["payload"]])
   
   if (length(json_payload) == 0L) {raise(HTTPError$bad_request())}
   #check if convertible to json
-  params = json_to_input(json_payload)
+  params = json_to_parameters(json_payload)
 
   # impute function needs data, maxit, m, seed
   if(is.null(params$data)) {raise(HTTPError$not_acceptable())}
@@ -163,10 +168,6 @@ impute_handler = function(.req, .res) {
 
 example_data_handler = function(.req, .res) {
   example_name = as.character(.req$parameters_query[["name"]])
-  test_data = c("nhanes", "nhanes2")
-  if (!(example_name %in% test_data)) {
-    raise(HTTPError$not_found())
-  }
   .res$set_body(example_data_to_json(example_name))
   .res$set_content_type("text/plain")
 }
@@ -206,6 +207,7 @@ webmice$add_post(
 
 webmice$add_get(path = "/exampledata", FUN = example_data_handler)
 webmice$add_get(path = "/imputation", FUN = impute_handler)
+webmice$add_get(path = "/fit", FUN = fit_handler)
 yaml_file = file.path(base_folder, "openapi.yaml")
 webmice$add_openapi(path = "/openapi.yaml", file_path = yaml_file)
 webmice$add_swagger_ui(path = "/doc", path_openapi = "/openapi.yaml", use_cdn = TRUE)

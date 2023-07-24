@@ -8,9 +8,9 @@ ARG OS_IDENTIFIER=ubuntu-2004
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 
-RUN R -e "install.packages('mice', dependencies=TRUE)"
 RUN R -e "install.packages('RestRserve', repos = 'https://cloud.r-project.org')"
 RUN R -e "install.packages('jsonlite')"
+RUN R -e "install.packages('mice', dependencies=TRUE)"
 
 # Pull in webmice code
 RUN mkdir /home/webmice

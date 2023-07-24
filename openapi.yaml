@@ -47,6 +47,27 @@ paths:
                 example: "{\"age\":{\"1\":[],\"2\":[]},\"bmi\":{\"1\":[30.1,33.2,27.4],\"2\":[30.1,27.2,21.7]},\"hyp\":{\"1\":[1,2,1],\"2\":[1,2,2]},\"chl\":{\"1\":[187,218,238],\"2\":[187,218,187]}}"
         400:
           description: Bad Request.
+  /fit:
+    get:
+      description: Run mice imputation on a datasets (nhanes, nhanes2) or an own csv file.
+      parameters:
+        - name: "payload"
+          description: "JSON of mice::complete output"
+          in: query
+          schema:
+            type: string
+          example: "[{\"age\":1,\"bmi\":30.1,\"hyp\":1,\"chl\":187},{\"age\":2,\"bmi\":22.7,\"hyp\":1,\"chl\":187}]"
+          required: true
+      responses:
+        200:
+          description: API response
+          content:
+            text/json:
+              schema:
+                type: string
+                example: "{\"coefficients\":[-16.8639,43.8989,5.0529],\"residuals\":[7.8716,1.3645, ...]}"
+        400:
+          description: Bad Request.
   /data:
     post:
       summary: Uploads a csv - file
