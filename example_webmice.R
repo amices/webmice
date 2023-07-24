@@ -129,19 +129,34 @@ call_mice = function(params){
   }
 }
 
-call_with = function(input){
+call_with = function(data, model, formula){
+  fit <- c()
   # input = complete(imp)
-  fit <- with(input, lm(chl ~ age + bmi))
+  if(model == "lm"){
+    fit <- with(data, lm(as.formula(formula)))
+  }
+  if(model == "glm"){
+    fit <- with(data, glm(as.formula(formula)))
+  } 
+  fit$error <- "Model not known"
   return(toJSON(fit, force=TRUE))
 }
 
 fit_handler = function(.req, .res) {
-  json_payload = as.character(.req$parameters_query[["payload"]])
+  fitJson <- ''
+  input <- as.character(.req$parameters_query[["payload"]])
+  # if answers are copied straight from the Swagger interface, there are too many backslashes
+  json_payload <- gsub('\\\\', '', input)
   if (length(json_payload) == 0L) {raise(HTTPError$bad_request())}
   params <- json_to_parameters(json_payload)
-  if(is.null(params)) {HTTPError$not_acceptable()}
-  print("DEBUG: Calling with (fitting function)")
-  fitJson <- call_with(params)
+  if(is.null(params$data)) {fitJson <- "Error: no data"}
+  if(is.null(params$model)) {fitJson <- "Error: no model"}
+  if(is.null(params$formula)) {fitJson <- "Error: no formula"}
+  
+  if(fitJson == ''){
+    print("DEBUG: Calling with (fitting function)")
+    fitJson <- call_with(params$data, params$model, params$formula)
+  }
   .res$set_body(fitJson)
   .res$set_content_type("text/plain")
 }

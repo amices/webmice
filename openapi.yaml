@@ -49,14 +49,14 @@ paths:
           description: Bad Request.
   /fit:
     get:
-      description: Run mice imputation on a datasets (nhanes, nhanes2) or an own csv file.
+      description: Fit a model.
       parameters:
         - name: "payload"
-          description: "JSON of mice::complete output"
+          description: "data: JSON of mice::complete output, model: lm, formula chl ~ age + bmi"
           in: query
           schema:
             type: string
-          example: "[{\"age\":1,\"bmi\":30.1,\"hyp\":1,\"chl\":187},{\"age\":2,\"bmi\":22.7,\"hyp\":1,\"chl\":187}]"
+          example: "{\"data\": [{\"age\":1,\"bmi\":30.1,\"hyp\":1,\"chl\":187}], \"model\":[\"lm\"], \"formula\":[\"chl ~ age + bmi\"]}"
           required: true
       responses:
         200:
