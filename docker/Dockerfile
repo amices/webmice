@@ -10,7 +10,7 @@ ENV LANG en_US.UTF-8
 
 RUN R -e "install.packages('mice', dependencies=TRUE)"
 RUN R -e "install.packages('RestRserve', repos = 'https://cloud.r-project.org')"
-RUN R -e "install.packages('rjson')"
+RUN R -e "install.packages('jsonlite')"
 
 # Pull in webmice code
 RUN mkdir /home/webmice

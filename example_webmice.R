@@ -1,18 +1,19 @@
 library(mice, warn.conflicts = FALSE)
 library(RestRserve)
-library(rjson)
+library(jsonlite)
 library(readr)
 library(digest)
 
 webmice = Application$new()
 base_folder = file.path("", "home", "webmice") #used for data uploads
+#base_folder = file.path("", "Users/staig001/git-repos/micetestrestapi")
 print(base_folder)
 webmice_folder = file.path(base_folder, "testdata", "upload") #used for data uploads
 
 # Fetches example data from mice, returns data as json
 example_data_to_json = function(name) {
-  if(name == "nhanes") return(to_json(nhanes))
-  if(name == "nhanes2") return(to_json(nhanes2))
+  if(name == "nhanes") return(toJSON(nhanes))
+  if(name == "nhanes2") return(toJSON(nhanes2))
 }
 
 # Takes a json string and returns it as R list 
