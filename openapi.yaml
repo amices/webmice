@@ -4,9 +4,36 @@ info:
   version: '1.0'
 servers:
   - url: /
+
+tags:
+  - name: version
+    description: Information about R packages
+  - name: data
+    description: Retrieve example datasets or upload own dataset
+  - name: imputation
+    description: Impute missing data
+  - name: fit
+    description: Some predifined fits (optional)
+
 paths:
+  /version:
+    get:
+      tags:
+        - version
+      description: Software version
+      responses:
+        200:
+          description: API response
+          content:
+            text/json:
+              schema:
+                type: string
+                example: {"mice":["3.14.0"]}
+        
   /exampledata:
     get:
+      tags:
+        - data
       description: Retrieve exmple datasets (nhanes, nhanes2)
       parameters:
         - name: "name"
@@ -26,8 +53,33 @@ paths:
                 example: {"age":[1,2,1],"bmi":[null,22.7,null],"hyp":[null,1,1],"chl":[null,187,187]}
         400:
           description: Bad Request, not a valid example dataset.
-  /imputation:
+
+  /data:
+    post:
+      tags:
+        - data
+      summary: Uploads a csv - file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                csvfile:
+                  type: string
+                  format: binary
+
+      responses:
+        200:
+          description: API response
+          content:
+            text/plain:
+              schema:
+              type: string
+  /long:
     get:
+      tags:
+        - imputation
       description: Run mice imputation on a datasets (nhanes, nhanes2) or an own csv file.
       parameters:
         - name: "payload"
@@ -49,6 +101,8 @@ paths:
           description: Bad Request.
   /fit:
     get:
+      tags:
+        - fit
       description: Fit a model.
       parameters:
         - name: "payload"
@@ -68,23 +122,3 @@ paths:
                 example: "{\"coefficients\":[-16.8639,43.8989,5.0529],\"residuals\":[7.8716,1.3645, ...]}"
         400:
           description: Bad Request.
-  /data:
-    post:
-      summary: Uploads a csv - file
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                csvfile:
-                  type: string
-                  format: binary
-           
-      responses:
-        200:
-          description: API response
-          content:
-            text/plain:
-              schema:
-              type: string

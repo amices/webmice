@@ -42,7 +42,7 @@ imp_to_json = function(imp){
 }
 
 complete_data_as_json = function(imp){
-  return(toJSON(complete(imp)))
+  return(toJSON(complete(imp, "long")))
 }
 
 # Turn an impjson to imp again
@@ -139,7 +139,8 @@ call_with = function(data, model, formula){
     fit <- with(data, glm(as.formula(formula)))
   } 
   fit$error <- "Model not known"
-  return(toJSON(fit, force=TRUE))
+  print(summary(fit))
+  return(toJSON(summary(fit), force=TRUE))
 }
 
 fit_handler = function(.req, .res) {
@@ -191,6 +192,14 @@ md5_string = function(string) {
   return(digest(paste(Sys.time(), string), algo="md5", serialize=F))
 }
 
+mice_version = function(.req, .res) {
+  version = list()
+  version$mice <- sessionInfo("mice")$otherPkgs$mice$Version
+  print(toJSON(version))
+  .res$set_body(toJSON(version))
+  .res$set_content_type("text/plain")
+}
+
 # Uploads a file and stores it in webmice_folder
 #TODO: Swagger does not work with this function
 #library(httr)
@@ -219,9 +228,9 @@ webmice$add_post(
   }
 )
 
-
+webmice$add_get(path = "/version", FUN = mice_version)
 webmice$add_get(path = "/exampledata", FUN = example_data_handler)
-webmice$add_get(path = "/imputation", FUN = impute_handler)
+webmice$add_get(path = "/long", FUN = impute_handler)
 webmice$add_get(path = "/fit", FUN = fit_handler)
 yaml_file = file.path(base_folder, "openapi.yaml")
 webmice$add_openapi(path = "/openapi.yaml", file_path = yaml_file)
