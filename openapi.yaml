@@ -110,7 +110,7 @@ paths:
           in: query
           schema:
             type: string
-          example: "{\"data\": [{\"age\":1,\"bmi\":30.1,\"hyp\":1,\"chl\":187}], \"model\":[\"lm\"], \"formula\":[\"chl ~ age + bmi\"]}"
+          example: "{\"data\": [{\".imp\":1,\".id\":1,\"age\":1,\"bmi\":30.1,\"hyp\":1,\"chl\":187}], \"model\":[\"lm\"], \"formula\":[\"chl ~ age + bmi\"]}"
           required: true
       responses:
         200:
