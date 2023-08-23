@@ -122,3 +122,18 @@ call_with = function(data, model, formula){
   fit$error <- "Model not known"
   return(toJSON(summary(fit), force=TRUE))
 }
+
+call_pool = function(data){
+  pool <- c()
+  if(packageVersion("mice") < "3.16.4" ){
+    pool$error <- "ERROR pool.table: need mice version 3.16.4 or higher"
+    return(toJSON(pool, force=TRUE))
+  }
+
+  if(typeof(data) == "list"){
+    pool <- pool.table(data)
+  } else {
+    pool$error <- "Input data not of correct type (summary(fit))"
+  }
+  return(toJSON(pool, force=TRUE))
+}

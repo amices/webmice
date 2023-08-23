@@ -14,6 +14,8 @@ tags:
     description: Impute missing data
   - name: fit
     description: Some predifined fits (optional)
+  - name: pool
+    description: Pool results of a fit given its summary table. Depending on mice 3.16.4 or higher.
 
 paths:
   /version:
@@ -120,5 +122,30 @@ paths:
               schema:
                 type: string
                 example: "{\"coefficients\":[-16.8639,43.8989,5.0529],\"residuals\":[7.8716,1.3645, ...]}"
+        400:
+          description: Bad Request.
+
+  /pool:
+    get:
+      tags:
+        - pool
+      description: Pool the results of fitting a model to the imputed data. 
+                   Requires the summary(fit) table as json.
+      parameters:
+        - name: "payload"
+          description: "data: JSON of the summary(mice::fit) output"
+          in: query
+          schema:
+            type: string
+          example: "{\"data\": [{\"term\":\"(Intercept)\",\"estimate\":23.9357,\"std.error\":3.8732,\"statistic\":6.1798,\"p.value\":3.2106e-06,\"nobs\":25,\"df.residual\":22},{\"term\":\"hyp\",\"estimate\":1.1677,\"std.error\":1.6218,\"statistic\":0.72,\"p.value\":0.4791,\"nobs\":25,\"df.residual\":22},{\"term\":\"chl\",\"estimate\":0.0063,\"std.error\":0.0185,\"statistic\":0.3385,\"p.value\":0.7382,\"nobs\":25,\"df.residual\":22},{\"term\":\"(Intercept)\",\"estimate\":24.5434,\"std.error\":4.7611,\"statistic\":5.155,\"p.value\":0,\"nobs\":25,\"df.residual\":22},{\"term\":\"hyp\",\"estimate\":1.5843,\"std.error\":2.236,\"statistic\":0.7086,\"p.value\":0.486,\"nobs\":25,\"df.residual\":22},{\"term\":\"chl\",\"estimate\":-0.0032,\"std.error\":0.0205,\"statistic\":-0.1569,\"p.value\":0.8768,\"nobs\":25,\"df.residual\":25}]}"
+          required: true
+      responses:
+        200:
+          description: API response
+          content:
+            text/json:
+              schema:
+                type: string
+                example: "[{\"term\":\"(Intercept)\",\"m\":2,\"estimate\":24.2396,\"std.error\":4.3717,\"statistic\":5.5446,\"df\":19.8636,\"p.value\":0,\"conf.low\":15.1163,\"conf.high\":33.3628,\"riv\":0.0147,\"lambda\":0.0145,\"fmi\":0.1007,\"ubar\":18.8351,\"b\":0.1846,\"t\":19.112,\"dfcom\":22}]"
         400:
           description: Bad Request.

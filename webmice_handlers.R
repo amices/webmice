@@ -1,3 +1,17 @@
+pool_handler = function(.req, .res) {
+  poolJson <- ''
+  json_payload <- as.character(.req$parameters_query[["payload"]])
+  if (length(json_payload) == 0L) {raise(HTTPError$bad_request())}
+  params <- json_to_parameters(json_payload)
+  if(is.null(params$data)) {poolJson <- "Error: no data"}
+  if(poolJson == ''){
+    print("DEBUG: Calling pool.table (requires 3.16.4)")
+    poolJson <- call_pool(params$data)
+  }
+  .res$set_body(poolJson)
+  .res$set_content_type("text/plain")
+}
+
 fit_handler = function(.req, .res) {
   fitJson <- ''
   json_payload <- as.character(.req$parameters_query[["payload"]])

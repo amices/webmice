@@ -46,6 +46,7 @@ webmice$add_get(path = "/version", FUN = mice_version_handler)
 webmice$add_get(path = "/exampledata", FUN = example_data_handler)
 webmice$add_get(path = "/long", FUN = impute_longfmt_handler)
 webmice$add_get(path = "/fit", FUN = fit_handler)
+webmice$add_get(path = "/pool", FUN = pool_handler)
 
 # Swagger 
 yaml_file = file.path(base_folder, "openapi.yaml")
