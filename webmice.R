@@ -4,8 +4,8 @@ library(jsonlite)
 library(readr)
 library(digest)
 
-# Parameters
-# Code location in Docker, set through bash variable
+#' Parameters
+#' Code location in Docker, set through bash variable
 base_folder <- Sys.getenv("WEBMICE_LOC")
 if(base_folder == "") {
   base_folder <- getwd()
@@ -13,20 +13,20 @@ if(base_folder == "") {
   print(paste("Set to: ", base_folder))
 }
 
-# Imports
+#' Imports
 source(file.path(base_folder, "webmice_handlers.R"))
 source(file.path(base_folder, "webmice_functions.R"))
 
-# Data upload location
+#' Data upload location
 data_uploads = file.path(base_folder, "data_uploads")
 if(!file.exists(data_uploads)){
   dir.create(data_uploads)
 }
 
-# Application
+#' Application
 webmice = Application$new()
 
-# Endpoints
+#' Endpoints
 webmice$add_post(
   path = "/data",
   FUN = function(request, response) {
@@ -34,7 +34,7 @@ webmice$add_post(
     # parse CSV
     dt <- read_csv(cnt)
     hash <- md5_string(request$parameters_body$csvfile)
-    tmp = file.path(data_uploads, hash)
+    tmp <- file.path(data_uploads, hash)
     write_csv(dt, tmp)
 
     # set output body
@@ -48,7 +48,7 @@ webmice$add_get(path = "/long", FUN = impute_longfmt_handler)
 webmice$add_get(path = "/fit", FUN = fit_handler)
 webmice$add_get(path = "/pool", FUN = pool_handler)
 
-# Swagger 
+#' Swagger 
 yaml_file = file.path(base_folder, "openapi.yaml")
 webmice$add_openapi(path = "/openapi.yaml", file_path = yaml_file)
 webmice$add_swagger_ui(path = "/doc", path_openapi = "/openapi.yaml", use_cdn = TRUE)

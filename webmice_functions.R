@@ -1,5 +1,5 @@
-# Data
-# Fetches example data from mice, returns data as json
+#' Data
+#' Fetches example data from mice, returns data as json
 example_data_to_json = function(name) {
   result = tryCatch({
     return(toJSON(get(name)))
@@ -11,7 +11,7 @@ example_data_to_json = function(name) {
   return(result)
 }
 
-# Reads a csv file
+#' Reads a csv file
 read_file = function(path){
     tryCatch({
       data <- read.csv(path)
@@ -21,16 +21,15 @@ read_file = function(path){
     })
 }
 
-# Creates a hash for a data file name
+#' Creates a hash for a data file name
 md5_string = function(string) {
   return(digest(paste(Sys.time(), string), algo="md5", serialize=F))
 }
 
-# Convert JSON to R
-# Takes a json string and returns it as R list 
-# Test:
-# input <- list(data = "nhanes", maxit = 2, m = 2, seed = 1)
-# result <- json_to_parameters(to_json(input))
+#' Convert JSON to R
+#' Takes a json string and returns it as R list 
+#' Test:
+#' input <- list(data="nhanes", maxit=2, m=2, seed=1)
 json_to_parameters = function(json_payload){
   result = tryCatch({
     params = fromJSON(json_payload)
@@ -40,9 +39,8 @@ json_to_parameters = function(json_payload){
   })
 }
 
-# Mice return functions
-
-# Takes the result of the imputation and returns the long format of the data
+#' Mice return functions
+#' Takes the result of the imputation and returns the long format of the data
 imp_result_long_fmt = function(imp){
   return(toJSON(complete(imp, "long")))
 }
@@ -53,12 +51,12 @@ imp_result_pred_matrix = function(imp){
   return(toJSON(res))
 }
 
-# Mice functions
+#' Mice functions
 impute = function(data, maxit, m, seed) {
   imp <- list()
   imp$error <- ""
   result = tryCatch({
-    imp <- mice(data, maxit = maxit, m = m, seed = seed)
+    imp <- mice(data, maxit=maxit, m=m, seed=seed)
     return(imp)
   }, error = function(e) {
     return("Failure: mice")
@@ -70,9 +68,9 @@ impute = function(data, maxit, m, seed) {
   }
 }
 
-# Calls mice's imputation function with parameters provided in a list 'params'
-# Expected: params$data, params$maxit, params$m, params$seed
-# data: example data name, a hash from an uploaded file, or a csv filee
+#' Calls mice's imputation function with parameters provided in a list 'params'
+#' Expected: params$data, params$maxit, params$m, params$seed
+#' data: example data name, a hash from an uploaded file, or a csv filee
 call_mice = function(params){
   imp <- list()
   result = tryCatch({
@@ -83,30 +81,27 @@ call_mice = function(params){
   
   if(typeof(result) == "list") {
     print("DEBUG: Imputation on example data set")
-    imp <- impute(data, maxit = params$maxit, m = params$m,
-                  seed = params$seed)
+    imp <- impute(data, maxit=params$maxit, m=params$m, seed=params$seed)
     return(imp)
   }
   if(typeof(params$data) == "character" && endsWith(params$data, ".csv")){
     print("DEBUG: Imputation on local csv file")
-    df = read_file(params$data)
+    df <- read_file(params$data)
     if(is.null(df)){
       imp$error <- "Failure: reading local csv file"
       return(imp)
     }
-    imp <- impute(nhanes, maxit = params$maxit, m = params$m,
-                  seed = params$seed)
+    imp <- impute(nhanes, maxit=params$maxit, m=params$m, seed=params$seed)
     return(imp)
   }
   if(typeof(params$data) == "character"){
     print("DEBUG: Imputation on uploaded file")
-    df = read_file(file.path(data_uploads, params$data))
+    df <- read_file(file.path(data_uploads, params$data))
     if(is.null(df)){
       imp$error <- "Failure: reading file, not an example dataset or file on server"
       return(imp)
     }
-    imp <- impute(df, maxit = params$maxit, m = params$m,
-                  seed = params$seed)
+    imp <- impute(df, maxit=params$maxit, m=params$m, seed=params$seed)
     return(imp)
   }
 }

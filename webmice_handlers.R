@@ -16,7 +16,7 @@ fit_handler = function(.req, .res) {
   fitJson <- ''
   json_payload <- as.character(.req$parameters_query[["payload"]])
   # if answers are copied straight from the Swagger interface, there are too many backslashes
-  #json_payload <- gsub('\\\\', '', input)
+  # json_payload <- gsub('\\\\', '', input)
   if (length(json_payload) == 0L) {raise(HTTPError$bad_request())}
   params <- json_to_parameters(json_payload)
   if(is.null(params$data)) {fitJson <- "Error: no data"}
@@ -32,11 +32,11 @@ fit_handler = function(.req, .res) {
 }
 
 impute_longfmt_handler = function(.req, .res) {
-  json_payload = as.character(.req$parameters_query[["payload"]])
+  json_payload <- as.character(.req$parameters_query[["payload"]])
   
   if (length(json_payload) == 0L) {raise(HTTPError$bad_request())}
-  #check if convertible to json
-  params = json_to_parameters(json_payload)
+  # check if convertible to json
+  params <- json_to_parameters(json_payload)
 
   # impute function needs data, maxit, m, seed
   if(is.null(params$data)) {raise(HTTPError$not_acceptable())}
@@ -56,13 +56,13 @@ impute_longfmt_handler = function(.req, .res) {
 }
 
 example_data_handler = function(.req, .res) {
-  example_name = as.character(.req$parameters_query[["name"]])
+  example_name <- as.character(.req$parameters_query[["name"]])
   .res$set_body(example_data_to_json(example_name))
   .res$set_content_type("text/plain")
 }
 
 mice_version_handler = function(.req, .res) {
-  version = list()
+  version <- list()
   version$mice <- sessionInfo("mice")$otherPkgs$mice$Version
   .res$set_body(toJSON(version))
   .res$set_content_type("text/plain")
