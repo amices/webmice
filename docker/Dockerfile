@@ -1,5 +1,5 @@
 FROM rocker/r-ver:4.3.1
-LABEL version="0.1"
+LABEL version="0.1.1"
 LABEL description="Docker container running webmice (R, RestRserve)"
 
 ARG R_VERSION=4.3.1
@@ -16,19 +16,19 @@ RUN apt update && \
 
 #RUN echo 'options(repos = c(CRAN = "https://cloud.r-project.org"))' >>"${R_HOME}/etc/Rprofile.site"
 RUN R -e "install.packages('RestRserve', repos = 'https://cloud.r-project.org')"
-RUN R -e "install.packages('jsonlite')"
 RUN R -e "install.packages('remotes')"
 RUN R -e "remotes::install_github('amices/mice')"
+RUN R -e "remotes::install_github('amices/micerocker')"  # 0.1.3
 
-# Pull in webmice code
-RUN mkdir /home/webmice
-RUN rm -rf /home/webmice
+# Create working directory
 RUN mkdir /home/webmice
 ENV WEBMICE_LOC="/home/webmice"
 
+# Create data directory
+RUN mkdir /home/webmice/data_uploads
+ENV MICEROCKER_DATA_UPLOADS="/home/webmice/data_uploads"
+
 COPY webmice.R /home/webmice/webmice.R
-COPY webmice_handlers.R /home/webmice/webmice_handlers.R
-COPY webmice_functions.R /home/webmice/webmice_functions.R
 COPY ../openapi.yaml /home/webmice/openapi.yaml
 
 WORKDIR /home/webmice
