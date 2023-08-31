@@ -1,30 +1,24 @@
-library(RestRserve)
-library(mice, warn.conflicts = FALSE)
-library(jsonlite)
-library(readr)
-library(digest)
+# remotes::install_github("amices/micerocker")
+
+require(mice, warn.conflicts = FALSE) # >= 3.16.4
+require(micerocker)  # >= 0.1.3
+require(RestRserve)
+require(readr)
 
 #' Parameters
 #' Code location in Docker, set through bash variable
 base_folder <- Sys.getenv("WEBMICE_LOC")
-if(base_folder == "") {
+if (base_folder == "") {
   base_folder <- getwd()
   print('No base folder for webmice set (export WEBMICE_LOC="directory").')
   print(paste("Set to: ", base_folder))
 }
 
-#' Imports
-source(file.path(base_folder, "webmice_handlers.R"))
-source(file.path(base_folder, "webmice_functions.R"))
-
-#' Data upload location
-data_uploads = file.path(base_folder, "data_uploads")
-if(!file.exists(data_uploads)){
-  dir.create(data_uploads)
-}
+data_uploads <- "data_uploads"
+Sys.setenv(MICEROCKER_DATA_UPLOADS = data_uploads)
 
 #' Application
-webmice = Application$new()
+webmice = RestRserve::Application$new()
 
 #' Endpoints
 webmice$add_post(
@@ -48,7 +42,7 @@ webmice$add_get(path = "/long", FUN = impute_longfmt_handler)
 webmice$add_get(path = "/fit", FUN = fit_handler)
 webmice$add_get(path = "/pool", FUN = pool_handler)
 
-#' Swagger 
+#' Swagger
 yaml_file = file.path(base_folder, "openapi.yaml")
 webmice$add_openapi(path = "/openapi.yaml", file_path = yaml_file)
 webmice$add_swagger_ui(path = "/doc", path_openapi = "/openapi.yaml", use_cdn = TRUE)
