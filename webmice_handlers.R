@@ -51,7 +51,7 @@ fit_handler <- function(.req, .res) {
   .res$set_content_type("text/plain")
 }
 
-#' @rdname pool_handler
+#' @rdname impute_longfmt_handler
 #' @export
 impute_longfmt_handler <- function(.req, .res) {
   json_payload <- as.character(.req$parameters_query[["payload"]])
@@ -87,7 +87,7 @@ impute_longfmt_handler <- function(.req, .res) {
   }
   else {
     if (is.null(params$m)) {
-      params$m <- 5
+      params$m <- 5 #default value
     }
     print("DEBUG: Calling mice")
     imp <- call_mice(params)
@@ -106,21 +106,43 @@ impute_longfmt_handler <- function(.req, .res) {
 #' @rdname example_data_handler
 #' @export
 example_data_handler <- function(.req, .res) {
+  data <- list()
+  data$success <- ""
+  data$result <- ""
+  data$error <- ""
   example_name <- as.character(.req$parameters_query[["name"]])
-  .res$set_body(example_data_to_json(example_name))
-  .res$set_content_type("text/plain")
+
+  result <- tryCatch(
+    {
+      data$result <- get(example_name)
+      data$success <- TRUE
+    },
+    error = function(e) {
+      res <- list()
+      res$success <- FALSE
+      res$result <- ""
+      res$error <- as.character(e)
+      return(res)
+    }
+  )
+  if (typeof(result) == "list") {
+    data <- result
+  }
+  .res$set_body(toJSON(data))
+  .res$set_content_type("text/plain") 
 }
 
 #' @rdname mice_version_handler
 #' @export
 mice_version_handler <- function(.req, .res) {
   version <- list()
-  version$success <- TRUE
+  version$success <- ""
   version$error <- ""
 
   result <- tryCatch(
     {
-      version$result <- sessionInfo("mice1")$otherPkgs$mice$Version
+      version$result <- sessionInfo("mice")$otherPkgs$mice$Version
+      version$success <- TRUE
     },
     warning = function(w) {
       res <- list()
@@ -130,8 +152,6 @@ mice_version_handler <- function(.req, .res) {
       return(res)
     }
   )
-  print("RESULT")
-  print(result)
 
   if (typeof(result) == "list") {
     version <- result
