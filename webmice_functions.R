@@ -3,19 +3,16 @@
 #' @param name An object name (given as a character string or a symbol).
 #' @returns Data as json
 #' @seealso \link[base]{get}
-example_data_to_json <- function(name) {
-  result <- tryCatch(
-    {
-      return(toJSON(get(name)))
-    },
-    error = function(e) {
-      err <- c()
-      err$error <- "Error: data name not found"
-      return(toJSON(err))
-    }
-  )
-  return(result)
-}
+#get_example_data<- function(name) { result <- tryCatch(
+#    {
+#      return(get(name))
+#    },
+#    error = function(e) {
+#      return(NULL)
+#    }
+#  )
+#  return(result)
+#}
 
 #' Reads a csv file
 #'
@@ -66,7 +63,7 @@ json_to_parameters <- function(json_payload) {
 #' @param imp Multiply imputed data set, an object of class \link[mice]{mids}
 #' @seealso \link[mice]{complete}
 imp_result_long_fmt <- function(imp) {
-  return(toJSON(complete(imp, "long")))
+  return(complete(imp, "long"))
 }
 
 imp_result_pred_matrix <- function(imp) {
@@ -86,7 +83,7 @@ impute <- function(data, maxit, m, seed) {
       return(imp)
     },
     error = function(e) {
-      return("Failure: mice")
+      return(e)
     }
   )
 
@@ -152,7 +149,7 @@ call_with <- function(data, model, formula) {
     fit <- with(data, glm(as.formula(formula)))
   }
   fit$error <- "Model not known"
-  return(toJSON(summary(fit), force = TRUE))
+  return(summary(fit), force = TRUE)
 }
 
 call_pool <- function(data) {

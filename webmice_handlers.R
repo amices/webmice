@@ -24,26 +24,40 @@ pool_handler <- function(.req, .res) {
 #' @rdname pool_handler
 #' @export
 fit_handler <- function(.req, .res) {
-  fit_json <- ""
+  fit <- list()
+  fit$result <- ""
+  fit$error <- ""
+  check <- TRUE
+  
   json_payload <- as.character(.req$parameters_query[["payload"]])
   # if answers are copied straight from the Swagger interface,
   # there are too many backslashes
-  # json_payload <- gsub('\\\\', '', input)
+  json_payload <- gsub('\\\\', '', json_payload)
   if (length(json_payload) == 0L) {
-    raise(HTTPError$bad_request())
+    check <- FALSE
+    fit$error <- "No input"
+  } else {
+    params <- json_to_parameters(json_payload)
+    if (is.null(params$data)) {
+      check <- FALSE
+      fit$error <- "No data"
+    }
+    if (is.null(params$model)) {
+      check <- FALSE
+      fit$error <- "No model"
+    }
+    if (is.null(params$formula)) {
+      check <- FALSE
+      fit$error <- "No formula"
+    }
   }
-  params <- json_to_parameters(json_payload)
-  if (is.null(params$data)) {
-    fit_json <- "Error: no data"
-  }
-  if (is.null(params$model)) {
-    fit_json <- "Error: no model"
-  }
-  if (is.null(params$formula)) {
-    fit_json <- "Error: no formula"
-  }
-
-  if (fit_json == "") {
+  
+  if (!check) {
+    fit$success <- FALSE
+    .res$set_body(toJSON(fit))
+    .res$set_content_type("text/plain")
+    return()
+  } else {
     print("DEBUG: Calling with (fitting function)")
     fit_json <- call_with(params$data, params$model, params$formula)
   }
@@ -84,8 +98,7 @@ impute_longfmt_handler <- function(.req, .res) {
     .res$set_body(toJSON(impute))
     .res$set_content_type("text/plain")
     return()
-  }
-  else {
+  } else {
     if (is.null(params$m)) {
       params$m <- 5 #default value
     }
