@@ -144,12 +144,14 @@ call_with <- function(data, model, formula) {
   fit <- c()
   if (model == "lm") {
     fit <- with(data, lm(as.formula(formula)))
+    return(summary(fit))
   }
   if (model == "glm") {
     fit <- with(data, glm(as.formula(formula)))
+    return(summary(fit))
   }
   fit$error <- "Model not known"
-  return(summary(fit), force = TRUE)
+  return(fit)
 }
 
 call_pool <- function(data) {

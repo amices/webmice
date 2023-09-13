@@ -59,9 +59,17 @@ fit_handler <- function(.req, .res) {
     return()
   } else {
     print("DEBUG: Calling with (fitting function)")
-    fit_json <- call_with(params$data, params$model, params$formula)
+    fitres <- call_with(params$data, params$model, params$formula)
+    if (is.null(fitres$error)) {
+      fit$success <- TRUE
+      fit$result <- fitres
+    } else {
+      fit$success <- FALSE
+      fit$error <- fitres$error
+    }
   }
-  .res$set_body(fit_json)
+  print(fit)
+  .res$set_body(toJSON(fit, force = TRUE))
   .res$set_content_type("text/plain")
 }
 
