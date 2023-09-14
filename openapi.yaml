@@ -30,7 +30,7 @@ paths:
             text/json:
               schema:
                 type: string
-                example: {"mice":["3.14.0"]}
+                example: {"success":[true],"error":[""],"result":["3.16.4"]}
         
   /exampledata:
     get:
@@ -52,10 +52,8 @@ paths:
             text/json:
               schema:
                 type: string
-                example: {"age":[1,2,1],"bmi":[null,22.7,null],"hyp":[null,1,1],"chl":[null,187,187]}
-        400:
-          description: Bad Request, not a valid example dataset.
-
+                example: {"success":[true],"result":[{"age":1},{"age":2,"bmi":22.7,"hyp":1,"chl":187}, {"age":1,"hyp":1,"chl":187},{"age":3},{"age":2,"bmi":27.4,"hyp":1,"chl":186}],"error":[""]}
+  
   /data:
     post:
       tags:
@@ -70,7 +68,6 @@ paths:
                 csvfile:
                   type: string
                   format: binary
-
       responses:
         200:
           description: API response
@@ -78,6 +75,7 @@ paths:
             text/plain:
               schema:
               type: string
+  
   /long:
     get:
       tags:
@@ -98,9 +96,8 @@ paths:
             text/json:
               schema:
                 type: string
-                example: "{\"age\":{\"1\":[],\"2\":[]},\"bmi\":{\"1\":[30.1,33.2,27.4],\"2\":[30.1,27.2,21.7]},\"hyp\":{\"1\":[1,2,1],\"2\":[1,2,2]},\"chl\":{\"1\":[187,218,238],\"2\":[187,218,187]}}"
-        400:
-          description: Bad Request.
+                example: {"result":[{"age":1,"bmi":30.1,"hyp":1,"chl":187,".imp":1,".id":"1"    },{"age":2,"bmi":22.7,"hyp":1,"chl":187,".imp":1,".id":"2"},{"age":1,"bmi":27.5,"hyp":1,"chl":131,".imp":2,".id":"23"},{"age":3,"    bmi":24.9,"hyp":1,"chl":218,".imp":2,".id":"24"},{"age":2,"bmi":27.4,"hyp":1,"chl":186,".imp    ":2,".id":"25"}],"error":[""],"success":[true]}
+  
   /fit:
     get:
       tags:
@@ -121,9 +118,7 @@ paths:
             text/json:
               schema:
                 type: string
-                example: "{\"coefficients\":[-16.8639,43.8989,5.0529],\"residuals\":[7.8716,1.3645, ...]}"
-        400:
-          description: Bad Request.
+                example: {"result":{"call":{},"terms":{},"residuals":[0],"coefficients":[[187,"NaN","NaN","NaN"]],"aliased":[false,true,true],"sigma":["NaN"],"df":[1,0,3],"adj.r.squared":[0],"r.squared":[0],"cov.unscaled":[[1]]},"error":[""],"success":[true]}
 
   /pool:
     get:
@@ -147,5 +142,3 @@ paths:
               schema:
                 type: string
                 example: "[{\"term\":\"(Intercept)\",\"m\":2,\"estimate\":24.2396,\"std.error\":4.3717,\"statistic\":5.5446,\"df\":19.8636,\"p.value\":0,\"conf.low\":15.1163,\"conf.high\":33.3628,\"riv\":0.0147,\"lambda\":0.0145,\"fmi\":0.1007,\"ubar\":18.8351,\"b\":0.1846,\"t\":19.112,\"dfcom\":22}]"
-        400:
-          description: Bad Request.
