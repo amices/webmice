@@ -4,20 +4,39 @@
 #' @param .res Result
 #' @export
 pool_handler <- function(.req, .res) {
-  pool_json <- ""
+  pool <- list()
+  pool$result <- ""
+  pool$error <- ""
+  check <- TRUE
+
   json_payload <- as.character(.req$parameters_query[["payload"]])
   if (length(json_payload) == 0L) {
-    raise(HTTPError$bad_request())
+    check <- FALSE
+    pool$error <- "No input"
+  } else {
+    params <- json_to_parameters(json_payload)
+    if (is.null(params$data)) {
+      check <- FALSE
+      pool$error <- "Error: no data"
+    }
   }
-  params <- json_to_parameters(json_payload)
-  if (is.null(params$data)) {
-    pool_json <- "Error: no data"
-  }
-  if (pool_json == "") {
+  if (!check) {
+    pool$success <- FALSE
+    .res$set_body(toJSON(pool))
+    .res$set_content_type("text/plain")
+    return()
+  } else {
     print("DEBUG: Calling pool.table (requires 3.16.4)")
-    pool_json <- call_pool(params$data)
+    poolres <- call_pool(params$data)
+    if (is.null(poolres$error)) {
+      pool$success <- TRUE
+      pool$result <- poolres
+    } else {
+      pool$success <- FALSE
+      pool$error <- poolres$error
+    }
   }
-  .res$set_body(pool_json)
+  .res$set_body(toJSON(pool, force = TRUE))
   .res$set_content_type("text/plain")
 }
 
