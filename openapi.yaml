@@ -83,11 +83,11 @@ paths:
       description: Run mice imputation on a datasets (nhanes, nhanes2) or an own csv file.
       parameters:
         - name: "payload"
-          description: "Json with keys \"data\", \"maxit\", \"m\", \"seed\"" 
+          description: "Json with keys \"data\", \"maxit\", \"m\", \"seed\", \"predictorMatrix\" (optional)" 
           in: query
           schema:
             type: string
-          example: "{\"data\":\"nhanes\",\"maxit\":2,\"m\":2,\"seed\":1}"
+          example: "{\"data\":\"nhanes\",\"maxit\":2,\"m\":2,\"seed\":1, \"predictorMatrix\":[[0,1,1,1],[1,0,1,1],[1,1,0,1],[1,1,1,0]]}"
           required: true
       responses:
         200:
