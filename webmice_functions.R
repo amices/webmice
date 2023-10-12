@@ -75,7 +75,7 @@ sanitize_data <- function(param_data) {
     return(return_list)
   }
 
-  if (typeof(params$data) == "character") {
+  if (typeof(param_data) == "character") {
     print("DEBUG: Imputation on uploaded file")
     df <- read_file(file.path(get_data_uploads(), param_data))
     if (is.null(df)) {
