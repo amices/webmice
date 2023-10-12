@@ -126,9 +126,6 @@ impute_longfmt_handler <- function(.req, .res) {
     .res$set_content_type("text/plain")
     return()
   } else {
-    if (is.null(params$m)) {
-      params$m <- 5 #default value
-    }
     print("DEBUG: Calling mice")
     imp <- call_mice(params)
     if (is.null(imp$error)) {

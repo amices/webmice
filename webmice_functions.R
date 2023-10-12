@@ -41,6 +41,57 @@ json_to_parameters <- function(json_payload) {
   )
 }
 
+#' Takes the content of the data parameter from a call to the impute endpoint
+#' and returns a dataframe.
+#'
+#' @param param_data A string with the name of the dataset, a hash from an
+#' uploaded file, or a csv file
+sanitize_data <- function(param_data) {
+  return_list <- list()
+  result <- tryCatch(
+    {
+      data <- get(param_data)
+    },
+    error = function(e) {
+      return(-1)
+    }
+  )
+  
+  if (typeof(result) == "list") {
+    print("DEBUG: Imputation on example data set")
+    return_list$df <- data
+    return(return_list)
+  }
+
+  if (typeof(param_data) == "character" && endsWith(param_data, ".csv")) {
+    print("DEBUG: Imputation on local csv file")
+    df <- read_file(param_data)
+    if (is.null(df)) {
+      return_list$error <- "Failure: reading local csv file"
+    }
+    else {
+      return_list$df <- df
+    }
+    return(return_list)
+  }
+
+  if (typeof(param_data) == "character") {
+    print("DEBUG: Imputation on uploaded file")
+    df <- read_file(file.path(get_data_uploads(), param_data))
+    if (is.null(df)) {
+      return_list$error <-
+        "Failure: reading file, not an example dataset or file on server"
+    }
+    else {
+      return_list$df <- df
+    }
+    return(return_list)
+  }
+
+  return_list$error <- "Unrecognized format for `data` parameter."
+  return(return_list)
+}
+
 #' Takes the result of the imputation and returns the long format of the data
 #'
 #' @param imp Multiply imputed data set, an object of class \link[mice]{mids}
@@ -78,43 +129,22 @@ impute <- function(data, maxit, m, seed) {
 #' @seealso \link[mice]{mice}
 call_mice <- function(params) {
   imp <- list()
-  result <- tryCatch(
-    {
-      data <- get(params$data)
-    },
-    error = function(e) {
-      return(-1)
-    }
-  )
 
-  if (typeof(result) == "list") {
-    print("DEBUG: Imputation on example data set")
-    imp <- impute(data, maxit = params$maxit, m = params$m, seed = params$seed)
+  san_df <- sanitize_data(params$data)
+  if (!is.null(san_df$error)) {
+    imp$error <- san_df$error
     return(imp)
   }
-  if (typeof(params$data) == "character" && endsWith(params$data, ".csv")) {
-    print("DEBUG: Imputation on local csv file")
-    df <- read_file(params$data)
-    if(is.null(df)){
-      imp$error <- "Failure: reading local csv file"
-      return(imp)
-    }
-    imp <- impute(mice::nhanes, maxit = params$maxit, m = params$m,
-                  seed = params$seed)
-    return(imp)
+  df <- san_df$df
+  nobs <- nrow(df)
+  nvar <- ncol(df)
+
+  if (is.null(params$m)) {
+    params$m <- 5 #default value
   }
 
-  if (typeof(params$data) == "character") {
-    print("DEBUG: Imputation on uploaded file")
-    df <- read_file(file.path(get_data_uploads(), params$data))
-    if (is.null(df)) {
-      imp$error <-
-        "Failure: reading file, not an example dataset or file on server"
-      return(imp)
-    }
-    imp <- impute(df, maxit = params$maxit, m = params$m, seed = params$seed)
-    return(imp)
-  }
+  imp <- impute(df, maxit = params$maxit, m = params$m, seed = params$seed)
+  return(imp)
 }
 
 call_with <- function(data, model, formula) {
