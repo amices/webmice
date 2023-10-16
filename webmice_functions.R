@@ -88,7 +88,51 @@ sanitize_data <- function(param_data) {
     return(return_list)
   }
 
-  return_list$error <- "Unrecognized format for `data` parameter."
+  return_list$error <- "Failure: unrecognized format for `data` parameter."
+  return(return_list)
+}
+
+#' Takes the content of the predictorMatrix parameter from a call to the impute
+#' endpoint and returns a matrix.
+#'
+#' @param param_pred A matrix of size p \* p or a vector of length p \* p (where
+#' p is the number of columns in the dataset) that can be converted to a square
+#' matrix (reading by row). The order of variables in the matrix is assumed to
+#' correspond to the order of the columns in the dataset.
+#' @param nvar Number of columns in the dataset.
+sanitize_predictorMatrix <- function(param_pred, nvar) {
+  return_list <- list()
+
+  if (is.vector(param_pred)) {
+    if (length(param_pred) != nvar * nvar) {
+      return_list$error <-
+        "Failure: predictorMatrix is not of the correct size."
+      return(return_list)
+    }
+    param_pred <- matrix(param_pred, nrow = nvar, byrow = TRUE)
+  }
+
+  if (is.matrix(param_pred)) {
+    if (nrow(param_pred) != ncol(param_pred)) {
+      return_list$error <- "Failure: predictorMatrix is not square."
+      return(return_list)
+    }
+    if (ncol(param_pred) != nvar) {
+      return_list$error <-
+        "Failure: predictorMatrix is not of the correct size."
+      return(return_list)
+    }
+    if (!all(param_pred %in% c(0, 1))) {
+      return_list$error <-
+        "Failure: predictorMatrix contains non-binary values."
+      return(return_list)
+    }
+    return_list$pm <- param_pred
+    return(return_list)
+  }
+
+  return_list$error <- 
+    "Failure: unrecognized format for `predictorMatrix` parameter."
   return(return_list)
 }
 
@@ -102,12 +146,13 @@ imp_result_long_fmt <- function(imp) {
 
 #' Mice functions
 #' @inheritParams mice::mice
-impute <- function(data, maxit, m, seed) {
+impute <- function(data, maxit, m, seed, predictorMatrix) {
   imp <- list()
   imp$error <- ""
   result <- tryCatch(
     {
-      imp <- mice(data, maxit = maxit, m = m, seed = seed)
+      imp <- mice(data, maxit = maxit, m = m, seed = seed,
+                  predictorMatrix = predictorMatrix)
       return(imp)
     },
     error = function(e) {
@@ -125,7 +170,8 @@ impute <- function(data, maxit, m, seed) {
 #'
 #' @param params   A list with elements: `data`: A string with the name of the
 #' dataset, a hash from an uploaded file, or a csv file; `maxit`:
-#' number of iterations; `m`: number of imputations, `seed`: seed.
+#' number of iterations; `m`: number of imputations, `seed`: seed,
+#' `predictorMatrix`: a predictor matrix.
 #' @seealso \link[mice]{mice}
 call_mice <- function(params) {
   imp <- list()
@@ -139,11 +185,24 @@ call_mice <- function(params) {
   nobs <- nrow(df)
   nvar <- ncol(df)
 
+  if (is.null(params$predictorMatrix)) {
+    pm <- make.predictorMatrix(df)
+  }
+  else {
+    san_pm <- sanitize_predictorMatrix(params$predictorMatrix, nvar)
+    if (!is.null(san_pm$error)) {
+      imp$error <- san_pm$error
+      return(imp)
+    }
+    pm <- san_pm$pm
+  }
+
   if (is.null(params$m)) {
     params$m <- 5 #default value
   }
 
-  imp <- impute(df, maxit = params$maxit, m = params$m, seed = params$seed)
+  imp <- impute(df, maxit = params$maxit, m = params$m, seed = params$seed,
+                predictorMatrix = pm)
   return(imp)
 }
 
