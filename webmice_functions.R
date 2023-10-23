@@ -41,14 +41,14 @@ json_to_parameters <- function(json_payload) {
   )
 }
 
-#' Takes a dataframe and checks for all columns thta consist of strings that there are only 25
+#' Takes a dataframe and checks for all columns thta consist of strings that there are only 50
 #' unique values.
 #'
 #' @param data An R dataframe
 check_factors <- function(data) {
   cols <- names(data)
   for (c in cols) {
-    if (unique(sapply(data[[c]], typeof)) == list('character') & length(levels(factor(data[[c]]))) > 25) {
+    if (unique(sapply(data[[c]], typeof)) == list('character') & length(levels(factor(data[[c]]))) > 50) {
       return(paste("Too many factors", c, length(levels(factor(data[[c]])))))
     }
   }
