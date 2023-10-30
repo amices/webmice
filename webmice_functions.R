@@ -68,10 +68,10 @@ sanitize_data <- function(param_data) {
       data <- get(param_data)
     },
     error = function(e) {
-      return(-1)
+      return(FALSE)
     }
   )
-  
+
   if (typeof(result) == "list") {
     print("DEBUG: Imputation on example data set")
     check <- check_factors(data)
@@ -177,13 +177,14 @@ imp_result_long_fmt <- function(imp) {
 
 #' Mice functions
 #' @inheritParams mice::mice
-impute <- function(data, maxit, m, seed, predictorMatrix) {
+impute <- function(data, maxit, m, seed, predictorMatrix, blocks) {
   imp <- list()
   imp$error <- ""
   result <- tryCatch(
     {
       imp <- mice(data, maxit = maxit, m = m, seed = seed,
-                  predictorMatrix = predictorMatrix)
+                  predictorMatrix = predictorMatrix, 
+                  blocks = blocks)
       return(imp)
     },
     error = function(e) {
@@ -228,11 +229,17 @@ call_mice <- function(params) {
     pm <- san_pm$pm
   }
 
+  if (is.null(params$blocks)) {
+    params$blocks <- names(df)
+  }
+
   if (is.null(params$m)) {
     params$m <- 5 #default value
   }
 
-  imp <- impute(df, maxit = params$maxit, m = params$m, seed = params$seed,
+  imp <- impute(df, maxit = params$maxit, m = params$m, 
+                seed = params$seed,
+                blocks = params$blocks,
                 predictorMatrix = pm)
   return(imp)
 }
