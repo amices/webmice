@@ -41,6 +41,21 @@ json_to_parameters <- function(json_payload) {
   )
 }
 
+#' Takes a dataframe and checks for all columns thta consist of strings that there are only 50
+#' unique values.
+#'
+#' @param data An R dataframe
+check_factors <- function(data) {
+  cols <- names(data)
+  for (c in cols) {
+    if (unique(sapply(data[[c]], typeof)) == list('character') & length(levels(factor(data[[c]]))) > 50) {
+      return(paste("Too many factors", c, length(levels(factor(data[[c]])))))
+    }
+  }
+  return("")
+}
+
+
 #' Takes the content of the data parameter from a call to the impute endpoint
 #' and returns a dataframe.
 #'
@@ -59,8 +74,14 @@ sanitize_data <- function(param_data) {
   
   if (typeof(result) == "list") {
     print("DEBUG: Imputation on example data set")
-    return_list$df <- data
-    return(return_list)
+    check <- check_factors(data)
+    if (check == "") {
+      return_list$df <- data
+      return(return_list)
+    } else {
+      return_list$error <- check
+      return(return_list)
+    }
   }
 
   if (typeof(param_data) == "character" && endsWith(param_data, ".csv")) {
@@ -70,7 +91,12 @@ sanitize_data <- function(param_data) {
       return_list$error <- "Failure: reading local csv file"
     }
     else {
-      return_list$df <- df
+      check <- check_factors(df)
+      if (check == "") {
+        return_list$df <- df
+      } else {
+        return_list$error <- check
+      }
     }
     return(return_list)
   }
@@ -83,7 +109,12 @@ sanitize_data <- function(param_data) {
         "Failure: reading file, not an example dataset or file on server"
     }
     else {
-      return_list$df <- df
+      check <- check_factors(df)
+      if (check == "") {
+        return_list$df <- df
+      } else {
+        return_list$error <- check
+      }
     }
     return(return_list)
   }
