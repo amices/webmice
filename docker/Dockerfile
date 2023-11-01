@@ -18,7 +18,7 @@ RUN apt update && \
 RUN R -e "install.packages('RestRserve', repos = 'https://cloud.r-project.org')"
 RUN R -e "install.packages('jsonlite')"
 RUN R -e "install.packages('remotes')"
-RUN R -e "remotes::install_github('amices/mice')"
+RUN R -e "remotes::install_github('amices/mice', ref='support_blocks')"
 
 # Pull in webmice code
 RUN mkdir /home/webmice
