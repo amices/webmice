@@ -16,6 +16,7 @@ if(base_folder == "") {
 #' Imports
 source(file.path(base_folder, "webmice_handlers.R"))
 source(file.path(base_folder, "webmice_functions.R"))
+source(file.path(base_folder, "sanitize_input.R"))
 
 #' Data upload location
 data_uploads = file.path(base_folder, "data_uploads")

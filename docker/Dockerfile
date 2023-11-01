@@ -29,6 +29,7 @@ ENV WEBMICE_LOC="/home/webmice"
 COPY webmice.R /home/webmice/webmice.R
 COPY webmice_handlers.R /home/webmice/webmice_handlers.R
 COPY webmice_functions.R /home/webmice/webmice_functions.R
+COPY sanitize_input.R /home/webmice/sanitize_input.R
 COPY ../openapi.yaml /home/webmice/openapi.yaml
 
 WORKDIR /home/webmice
