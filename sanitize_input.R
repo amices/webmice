@@ -9,7 +9,7 @@ check_factors <- function(data) {
       return(paste("Too many factors", c, length(levels(factor(data[[c]])))))
     }
   }
-  return("")
+  return(NULL)
 }
 
 
@@ -32,7 +32,7 @@ sanitize_data <- function(param_data) {
   if (typeof(result) == "list") {
     print("DEBUG: Imputation on example data set")
     check <- check_factors(data)
-    if (check == "") {
+    if (is.null(check)) {
       return_list$df <- data
       return(return_list)
     } else {
