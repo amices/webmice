@@ -157,7 +157,7 @@ sanitize_ignore <- function(param_ign, nobs) {
       return(return_list)
     }
 
-    if (typeof(param_ign) != "logical") {
+    if (!is.logical(param_ign)) {
       return_list$error <-
         "Failure: `ignore` vector contains non-logical values."
       return(return_list)
