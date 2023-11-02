@@ -135,7 +135,7 @@ impute_longfmt_handler <- function(.req, .res) {
       impute$success <- FALSE
       impute$error <- imp$error
     }
-    .res$set_body(toJSON(impute, force=TRUE))
+    .res$set_body(toJSON(impute, force = TRUE))
     .res$set_content_type("text/plain")
   }
 }
