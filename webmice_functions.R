@@ -52,14 +52,15 @@ imp_result_long_fmt <- function(imp) {
 #' Mice functions
 #' @inheritParams mice::mice
 impute <- function(data, maxit, m, seed, 
-                   blocks, parcel, predictorMatrix, ignore) {
+                   blocks, parcel, predictorMatrix, ignore, where) {
   imp <- list()
   imp$error <- ""
   result <- tryCatch(
     {
       imp <- mice(data, maxit = maxit, m = m, seed = seed,
                   predictorMatrix = predictorMatrix, 
-                  blocks = blocks, parcel = parcel, ignore = ignore)
+                  blocks = blocks, parcel = parcel,
+                  ignore = ignore, where = where)
       return(imp)
     },
     error = function(e) {
@@ -122,7 +123,7 @@ call_mice <- function(params) {
   if (is.null(params$m)) {
     params$m <- 5 #default value
   }
-  
+
   if (is.null(params$ignore)) {
     ign <- NULL
   } else {
@@ -133,13 +134,25 @@ call_mice <- function(params) {
     }
     ign <- san_ign$ign
   }
+
+  if (is.null(params$where)) {
+    whr <- is.na(df)
+  } else {
+    san_whr <- sanitize_where(params$where, nobs, nvar)
+    if (!is.null(san_whr$error)) {
+      imp$error <- san_whr$error
+      return(imp)
+    }
+    whr <- san_whr$whr
+  }
   
   imp <- impute(df, maxit = params$maxit, m = params$m, 
                 seed = params$seed,
                 blocks = params$blocks,
                 parcel = parcel,
                 predictorMatrix = pm,
-                ignore = ign)
+                ignore = ign,
+                where = whr)
   return(imp)
 }
 

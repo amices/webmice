@@ -171,3 +171,48 @@ sanitize_ignore <- function(param_ign, nobs) {
     "Failure: unrecognized format for `ignore` parameter."
   return(return_list)
 }
+
+#' Takes the content of the where parameter from a call to the impute endpoint
+#' and returns a matrix.
+#'
+#' @param param_where A matrix of size n \* p or a vector of length n \* p
+#' (where n is the number of rows in the dataset and p is the number of columns)
+#' that can be converted to a matrix (reading by row).
+#' @param nobs Number of rows in the dataset.
+#' @param nvar Number of columns in the dataset.
+sanitize_where <- function(param_where, nobs, nvar) {
+  return_list <- list()
+  
+  if (is.vector(param_where)) {
+    if (length(param_where) != nobs * nvar) {
+      return_list$error <-
+        "Failure: `where` matrix is not of the correct size."
+      return(return_list)
+    }
+    param_where <- matrix(param_where, nrow = nobs, byrow = TRUE)
+  }
+  
+  if (is.matrix(param_where)) {
+    if (nrow(param_where) != nobs) {
+      return_list$error <- 
+        "Failure: `where` matrix is not of the correct size."
+      return(return_list)
+    }
+    if (ncol(param_where) != nvar) {
+      return_list$error <-
+        "Failure: `where` matrix is not of the correct size."
+      return(return_list)
+    }
+    if (!is.logical(param_where)) {
+      return_list$error <-
+        "Failure: `where` matrix contains non-logical values."
+      return(return_list)
+    }
+    return_list$whr <- param_where
+    return(return_list)
+  }
+  
+  return_list$error <- 
+    "Failure: unrecognized format for `where` parameter."
+  return(return_list)
+}
