@@ -140,3 +140,34 @@ sanitize_parcel <- function(parcel_input) {
   }
   return(return_list)
 }
+
+#' Takes the content of the ignore parameter from a call to the impute endpoint
+#' and returns a logical vector.
+#'
+#' @param param_ign a vector of length n (where n is the number of rows in the
+#' dataset)
+#' @param nobs Number of rows in the dataset.
+sanitize_ignore <- function(param_ign, nobs) {
+  return_list <- list()
+  
+  if (is.vector(param_ign)) {
+    if (length(param_ign) != nobs) {
+      return_list$error <-
+        "Failure: `ignore` vector is not of the correct size."
+      return(return_list)
+    }
+
+    if (!is.logical(param_ign)) {
+      return_list$error <-
+        "Failure: `ignore` vector contains non-logical values."
+      return(return_list)
+    }
+
+    return_list$ign <- param_ign
+    return(return_list)
+  }
+  
+  return_list$error <- 
+    "Failure: unrecognized format for `ignore` parameter."
+  return(return_list)
+}
