@@ -7,7 +7,7 @@
 - fit
 - pool 
 
-## The impute endpoint
+## The impute endpoint *long*
 The function `mice` takes a lot of different arguments.
 Required arguments:
 
@@ -38,3 +38,7 @@ Optional arguments:
 
  Example:
 > "where":[[false,true,true,true],[false,false,false,false],[false,true,false,false], [false,true,true,true],[false,false,false,false],[false,true,true,false], [false,false,false,false],[false,false,false,false],[false,false,false,false], [false,true,true,true],[false,true,true,true],[false,true,true,true], [false,false,false,false],[false,false,false,false],[false,false,false,true], [false,true,true,true],[false,false,false,false],[false,false,false,false], [false,false,false,false],[false,false,false,true],[false,true,true,true], [false,false,false,false],[false,false,false,false],[false,false,false,true], [false,false,false,false]]
+
+- *"visitSeq":["a","b"]*: visitSequence, a vector of variable or parcel/block names
+  Example:
+> "visitSeq":["a","b"]
