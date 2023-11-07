@@ -39,6 +39,17 @@ Optional arguments:
  Example:
 > "where":[[false,true,true,true],[false,false,false,false],[false,true,false,false], [false,true,true,true],[false,false,false,false],[false,true,true,false], [false,false,false,false],[false,false,false,false],[false,false,false,false], [false,true,true,true],[false,true,true,true],[false,true,true,true], [false,false,false,false],[false,false,false,false],[false,false,false,true], [false,true,true,true],[false,false,false,false],[false,false,false,false], [false,false,false,false],[false,false,false,true],[false,true,true,true], [false,false,false,false],[false,false,false,false],[false,false,false,true], [false,false,false,false]]
 
-- *"visitSeq":["a","b"]*: visitSequence, a vector of variable or parcel/block names
+- *"visitSeq"*: visitSequence, a vector of variable or parcel/block names
+
   Example:
 > "visitSeq":["a","b"]
+
+- *"method"*: a list of strings to describe the method how to impute the variable
+
+ Example:
+> "method":["","pmm","pmm","pmm"]
+
+- *"formulas"*: a list of strings which describe formulas
+
+ Example:
+> "formulas":["bmi ~ age", "bmi ~ hyp"]

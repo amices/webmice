@@ -169,6 +169,22 @@ call_mice <- function(params) {
       return(imp)
     }
   }
+
+  if (is.null(params$formula)) {
+    formula <- NULL
+  } else {
+    if (is.null(params$parcel)) {
+      san_form <- sanitize_formula(params$formula, names(df))
+    } else {
+      san_form <- sanitize_formula(params$formula, names(parcel))
+    }
+    if(!is.null(san_form$error)){
+      imp$error <- san_form$error
+      return(imp)
+    } else {
+      formula <- san_form
+    }
+  }
   
   imp <- impute(df, maxit = params$maxit, m = params$m, 
                 seed = params$seed,

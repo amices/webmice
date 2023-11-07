@@ -87,7 +87,8 @@ paths:
         - name: "payload"
           description: "Json with keys \"data\", \"maxit\", \"m\", \"seed\", 
               \"predictorMatrix\" (optional), \"blocks\" (optional), \"ignore\" (optional),
-              \"where\" (optional), \"visitSeq\" (optional)" 
+              \"where\" (optional), \"visitSeq\" (optional), \"method\" (optional), 
+              \"formula\" (optional)" 
           in: query
           schema:
             type: string
