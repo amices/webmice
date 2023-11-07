@@ -151,7 +151,12 @@ call_mice <- function(params) {
   if (is.null(params$visitSeq)) {
     visitSeq <- NULL
   } else {
-    visitSeq <- params$visitSeq
+    if (typeof(params$visitSeq) == "character") {
+      visitSeq <- params$visitSeq
+    } else {
+       imp$error <- "VisitSequence is not a vector of type character."
+       return(imp)
+    }
   }
   
   imp <- impute(df, maxit = params$maxit, m = params$m, 
