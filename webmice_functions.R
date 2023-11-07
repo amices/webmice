@@ -53,7 +53,7 @@ imp_result_long_fmt <- function(imp) {
 #' @inheritParams mice::mice
 impute <- function(data, maxit, m, seed, 
                    blocks, parcel, predictorMatrix, ignore, where,
-                   visitSequence) {
+                   visitSequence, method) {
   imp <- list()
   imp$error <- ""
   result <- tryCatch(
@@ -62,7 +62,7 @@ impute <- function(data, maxit, m, seed,
                   predictorMatrix = predictorMatrix, 
                   blocks = blocks, parcel = parcel,
                   ignore = ignore, where = where,
-                  visitSequence = visitSequence
+                  visitSequence = visitSequence, method = method
       )
       return(imp)
     },
@@ -158,6 +158,17 @@ call_mice <- function(params) {
        return(imp)
     }
   }
+
+  if (is.null(params$method)) {
+    method <- NULL
+  } else {
+    if(typeof(params$method) == "character" | is.vector(params$method)) {
+      method <- params$method
+    } else {
+      imp$error <- "Method is not a vector or character."
+      return(imp)
+    }
+  }
   
   imp <- impute(df, maxit = params$maxit, m = params$m, 
                 seed = params$seed,
@@ -166,7 +177,8 @@ call_mice <- function(params) {
                 predictorMatrix = pm,
                 ignore = ign,
                 where = whr, 
-                visitSequence = visitSeq
+                visitSequence = visitSeq,
+                method = method
                 )
   return(imp)
 }
