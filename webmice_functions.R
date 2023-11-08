@@ -53,7 +53,7 @@ imp_result_long_fmt <- function(imp) {
 #' @inheritParams mice::mice
 impute <- function(data, maxit, m, seed, 
                    blocks, parcel, predictorMatrix, ignore, where,
-                   visitSequence, method) {
+                   visitSequence, method, dots) {
   imp <- list()
   imp$error <- ""
   result <- tryCatch(
@@ -62,7 +62,8 @@ impute <- function(data, maxit, m, seed,
                   predictorMatrix = predictorMatrix, 
                   blocks = blocks, parcel = parcel,
                   ignore = ignore, where = where,
-                  visitSequence = visitSequence, method = method
+                  visitSequence = visitSequence, method = method,
+                  dots = dots
       )
       return(imp)
     },
@@ -186,6 +187,21 @@ call_mice <- function(params) {
     }
   }
   
+  if (is.null(params$dots)) {
+    dots <- NULL
+  } else {
+    if (is.null(params$parcel)) {
+      san_dot <- sanitize_dots(params$dots, names(df))
+    } else {
+      san_dot <- sanitize_dots(params$dots, names(parcel))
+    }
+    if (!is.null(san_dot$error)) {
+      imp$error <- san_dot$error
+      return(imp)
+    }
+    dots <- san_dot$dot
+  }
+  
   imp <- impute(df, maxit = params$maxit, m = params$m, 
                 seed = params$seed,
                 blocks = params$blocks,
@@ -194,7 +210,8 @@ call_mice <- function(params) {
                 ignore = ign,
                 where = whr, 
                 visitSequence = visitSeq,
-                method = method
+                method = method,
+                dots = dots
                 )
   return(imp)
 }

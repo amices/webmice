@@ -53,3 +53,8 @@ Optional arguments:
 
  Example:
 > "formulas":["bmi ~ age", "bmi ~ hyp"]
+
+- *"dots"*: a named list of with for each parcel (optionally) a list of argments to pass down optional arguments to lower level imputation functions.
+
+ Example:
+> "dots":{"age":{"donor":20}} 
