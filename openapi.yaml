@@ -88,7 +88,7 @@ paths:
           description: "Json with keys \"data\", \"maxit\", \"m\", \"seed\", 
               \"predictorMatrix\" (optional), \"blocks\" (optional), \"ignore\" (optional),
               \"where\" (optional), \"visitSeq\" (optional), \"method\" (optional), 
-              \"formula\" (optional)" 
+              \"formula\" (optional), \"dots\" (optional)" 
           in: query
           schema:
             type: string

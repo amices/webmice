@@ -53,12 +53,12 @@ imp_result_long_fmt <- function(imp) {
 #' @inheritParams mice::mice
 impute <- function(data, maxit, m, seed, 
                    blocks, parcel, predictorMatrix, ignore, where,
-                   visitSequence, method, formula) {
+                   visitSequence, method, formulas, dots) {
   imp <- list()
   imp$error <- ""
   result <- tryCatch(
     {
-      if (!(is.null(predictorMatrix)) & !(is.null(formula))) {
+      if (!(is.null(predictorMatrix)) & !(is.null(formulas))) {
         imp$error <- 
             "Error: cannot process mix of 'predictorMatrix' and 'formulas' arguments"
         return(imp)
@@ -68,21 +68,23 @@ impute <- function(data, maxit, m, seed,
                   predictorMatrix = predictorMatrix, 
                   parcel = parcel,
                   ignore = ignore, where = where,
-                  visitSequence = visitSequence, method = method)
+                  visitSequence = visitSequence, method = method,
+                  dots = dots)
           return(imp)
         } else {
-          if (!(is.null(formula))) {
+          if (!(is.null(formulas))) {
             imp <- mice(data, maxit = maxit, m = m, seed = seed,
                   parcel = parcel,
                   ignore = ignore, where = where,
                   visitSequence = visitSequence, method = method,
-                  formulas = formula)
+                  formulas = formulas, dots = dots)
             return(imp)
           } else {
               imp <- mice(data, maxit = maxit, m = m, seed = seed,
                   parcel = parcel,
                   ignore = ignore, where = where,
-                  visitSequence = visitSequence, method = method)
+                  visitSequence = visitSequence, method = method,
+                  dots = dots)
               return(imp)
             }
          }
@@ -193,7 +195,7 @@ call_mice <- function(params) {
   }
 
   if (is.null(params$formulas)) {
-    formula <- NULL
+    formulas <- NULL
   } else {
     if (is.null(params$parcel)) {
       san_form <- sanitize_formula(params$formulas, names(df))
@@ -204,8 +206,23 @@ call_mice <- function(params) {
       imp$error <- san_form$error
       return(imp)
     } else {
-      formula <- san_form
+      formulas <- san_form
     }
+  }
+  
+  if (is.null(params$dots)) {
+    dots <- NULL
+  } else {
+    if (is.null(params$parcel)) {
+      san_dot <- sanitize_dots(params$dots, names(df))
+    } else {
+      san_dot <- sanitize_dots(params$dots, names(parcel))
+    }
+    if (!is.null(san_dot$error)) {
+      imp$error <- san_dot$error
+      return(imp)
+    }
+    dots <- san_dot$dot
   }
   
   imp <- impute(df, maxit = params$maxit, m = params$m, 
@@ -217,7 +234,8 @@ call_mice <- function(params) {
                 where = whr, 
                 visitSequence = visitSeq,
                 method = method,
-                formula = formula
+                formulas = formulas,
+                dots = dots
                 )
   return(imp)
 }

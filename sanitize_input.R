@@ -239,3 +239,42 @@ sanitize_formula <- function(param_formula, parcel_names) {
   return_list <- valid_formulas
   return(return_list)
 }
+
+#' Takes the content of the dots parameter from a call to the impute endpoint
+#' and returns a named list.
+#'
+#' @param param_where A named list containing at most q lists (one for each
+#' parcel) of arguments to pass down to other imputation methods.
+#' @param parcel_names Parcel names or dataset variable names
+sanitize_dots <- function(param_dots, parcel_names) {
+  return_list <- list()
+  
+  if (is.list(param_dots)) {
+    if (length(unique(names(param_dots))) < length(names(param_dots))) {
+      return_list$error <- 
+        "Failure: duplicate names in `dots` argument."
+      return(return_list)
+    }
+
+    if (!all(names(param_dots) %in% parcel_names)) {
+      return_list$error <- 
+        "Failure: unknown key(s) in `dots` argument."
+      return(return_list)
+    }
+    
+    for (dot in param_dots) {
+      if (!is.list(dot)) {
+        return_list$error <- 
+          "Failure: unrecognized format for element in `dots` parameter."
+        return(return_list)
+      }
+    }
+
+    return_list$dot <- param_dots
+    return(return_list)
+  }
+
+  return_list$error <- 
+    "Failure: unrecognized format for `dots` parameter."
+  return(return_list)
+}
