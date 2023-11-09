@@ -47,11 +47,11 @@ fit_handler <- function(.req, .res) {
   fit$result <- ""
   fit$error <- ""
   check <- TRUE
-  
+
   json_payload <- as.character(.req$parameters_query[["payload"]])
   # if answers are copied straight from the Swagger interface,
   # there are too many backslashes
-  json_payload <- gsub('\\\\', '', json_payload)
+  json_payload <- gsub("\\\\", "", json_payload)
   if (length(json_payload) == 0L) {
     check <- FALSE
     fit$error <- "No input"
@@ -70,14 +70,13 @@ fit_handler <- function(.req, .res) {
       fit$error <- "No formula"
     }
   }
-  
+
   if (!check) {
     fit$success <- FALSE
     .res$set_body(toJSON(fit))
     .res$set_content_type("text/plain")
     return()
   } else {
-    print("DEBUG: Calling with (fitting function)")
     fitres <- call_with(params$data, params$model, params$formula)
     if (is.null(fitres$error)) {
       fit$success <- TRUE
@@ -104,21 +103,21 @@ impute_longfmt_handler <- function(.req, .res) {
   if (length(json_payload) == 0L) {
     check <- FALSE
     impute$error <- "No input"
-  } 
+  }
   # check if convertible to json
   params <- json_to_parameters(json_payload)
   # impute function needs data
   if (is.null(params$data)) {
-      check <- FALSE
-      impute$error <- "No data"
+    check <- FALSE
+    impute$error <- "No data"
   }
   if (is.null(params$maxit)) {
-      check <- FALSE
-      impute$error <- "No maxit"
+    check <- FALSE
+    impute$error <- "No maxit"
   }
   if (is.null(params$seed)) {
-      check <- FALSE
-      impute$error <- "No seed"
+    check <- FALSE
+    impute$error <- "No seed"
   }
   if (!check) {
     impute$success <- FALSE
@@ -126,7 +125,6 @@ impute_longfmt_handler <- function(.req, .res) {
     .res$set_content_type("text/plain")
     return()
   } else {
-    print("DEBUG: Calling mice")
     imp <- call_mice(params)
     if (is.null(imp$error)) {
       impute$success <- TRUE
@@ -166,7 +164,7 @@ example_data_handler <- function(.req, .res) {
     data <- result
   }
   .res$set_body(toJSON(data))
-  .res$set_content_type("text/plain") 
+  .res$set_content_type("text/plain")
 }
 
 #' @rdname mice_version_handler
