@@ -53,18 +53,40 @@ imp_result_long_fmt <- function(imp) {
 #' @inheritParams mice::mice
 impute <- function(data, maxit, m, seed, 
                    blocks, parcel, predictorMatrix, ignore, where,
-                   visitSequence, method) {
+                   visitSequence, method, formula) {
   imp <- list()
   imp$error <- ""
   result <- tryCatch(
     {
-      imp <- mice(data, maxit = maxit, m = m, seed = seed,
+      if (!(is.null(predictorMatrix)) & !(is.null(formula))) {
+        imp$error <- 
+            "Error: cannot process mix of 'predictorMatrix' and 'formulas' arguments"
+        return(imp)
+      } else {
+        if (!(is.null(predictorMatrix))) {
+          imp <- mice(data, maxit = maxit, m = m, seed = seed,
                   predictorMatrix = predictorMatrix, 
                   blocks = blocks, parcel = parcel,
                   ignore = ignore, where = where,
-                  visitSequence = visitSequence, method = method
-      )
-      return(imp)
+                  visitSequence = visitSequence, method = method)
+          return(imp)
+        } else {
+          if (!(is.null(formula))) {
+            imp <- mice(data, maxit = maxit, m = m, seed = seed,
+                  blocks = blocks, parcel = parcel,
+                  ignore = ignore, where = where,
+                  visitSequence = visitSequence, method = method,
+                  formulas = formula)
+            return(imp)
+          } else {
+              imp <- mice(data, maxit = maxit, m = m, seed = seed,
+                  blocks = blocks, parcel = parcel,
+                  ignore = ignore, where = where,
+                  visitSequence = visitSequence, method = method)
+              return(imp)
+            }
+         }
+       }
     },
     error = function(e) {
       return(e)
@@ -78,7 +100,7 @@ impute <- function(data, maxit, m, seed,
 }
 
 #' Calls mice's imputation function with parameters provided in a list 'params'
-#'
+#
 #' @param params   A list with elements: `data`: A string with the name of the
 #' dataset, a hash from an uploaded file, or a csv file; `maxit`:
 #' number of iterations; `m`: number of imputations, `seed`: seed,
@@ -97,7 +119,7 @@ call_mice <- function(params) {
   nvar <- ncol(df)
 
   if (is.null(params$predictorMatrix)) {
-    pm <- make.predictorMatrix(df)
+    pm <- NULL
   } else {
     san_pm <- sanitize_predictorMatrix(params$predictorMatrix, nvar)
     if (!is.null(san_pm$error)) {
@@ -194,7 +216,8 @@ call_mice <- function(params) {
                 ignore = ign,
                 where = whr, 
                 visitSequence = visitSeq,
-                method = method
+                method = method,
+                formula = formula
                 )
   return(imp)
 }
