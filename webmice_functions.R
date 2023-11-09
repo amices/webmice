@@ -51,7 +51,7 @@ imp_result_long_fmt <- function(imp) {
 
 #' Mice functions
 #' @inheritParams mice::mice
-impute <- function(data, maxit, m, seed, 
+impute <- function(data, maxit, m, seed,
                    blocks, parcel, predictorMatrix, ignore, where,
                    visitSequence, method, formulas, dots) {
   imp <- list()
@@ -59,36 +59,33 @@ impute <- function(data, maxit, m, seed,
   result <- tryCatch(
     {
       if (!(is.null(predictorMatrix)) & !(is.null(formulas))) {
-        imp$error <- 
-            "Error: cannot process mix of 'predictorMatrix' and 'formulas' arguments"
+        imp$error <- paste("Error: cannot process mix of 'predictorMatrix'",
+                           "and 'formulas' arguments")
         return(imp)
       } else {
         if (!(is.null(predictorMatrix))) {
           imp <- mice(data, maxit = maxit, m = m, seed = seed,
-                  predictorMatrix = predictorMatrix, 
-                  parcel = parcel,
-                  ignore = ignore, where = where,
-                  visitSequence = visitSequence, method = method,
-                  dots = dots)
+                      predictorMatrix = predictorMatrix, parcel = parcel,
+                      ignore = ignore, where = where,
+                      visitSequence = visitSequence, method = method,
+                      dots = dots)
           return(imp)
         } else {
           if (!(is.null(formulas))) {
             imp <- mice(data, maxit = maxit, m = m, seed = seed,
-                  parcel = parcel,
-                  ignore = ignore, where = where,
-                  visitSequence = visitSequence, method = method,
-                  formulas = formulas, dots = dots)
+                        parcel = parcel, ignore = ignore, where = where,
+                        visitSequence = visitSequence, method = method,
+                        formulas = formulas, dots = dots)
             return(imp)
           } else {
-              imp <- mice(data, maxit = maxit, m = m, seed = seed,
-                  parcel = parcel,
-                  ignore = ignore, where = where,
-                  visitSequence = visitSequence, method = method,
-                  dots = dots)
-              return(imp)
-            }
-         }
-       }
+            imp <- mice(data, maxit = maxit, m = m, seed = seed,
+                        parcel = parcel, ignore = ignore, where = where,
+                        visitSequence = visitSequence, method = method,
+                        dots = dots)
+            return(imp)
+          }
+        }
+      }
     },
     error = function(e) {
       return(e)
@@ -178,15 +175,15 @@ call_mice <- function(params) {
     if (typeof(params$visitSeq) == "character") {
       visitSeq <- params$visitSeq
     } else {
-       imp$error <- "VisitSequence is not a vector of type character."
-       return(imp)
+      imp$error <- "VisitSequence is not a vector of type character."
+      return(imp)
     }
   }
 
   if (is.null(params$method)) {
     method <- NULL
   } else {
-    if(typeof(params$method) == "character" | is.vector(params$method)) {
+    if (typeof(params$method) == "character" || is.vector(params$method)) {
       method <- params$method
     } else {
       imp$error <- "Method is not a vector or character."
@@ -202,14 +199,14 @@ call_mice <- function(params) {
     } else {
       san_form <- sanitize_formula(params$formulas, names(parcel))
     }
-    if(!is.null(san_form$error)){
+    if (!is.null(san_form$error)) {
       imp$error <- san_form$error
       return(imp)
     } else {
       formulas <- san_form
     }
   }
-  
+
   if (is.null(params$dots)) {
     dots <- NULL
   } else {
@@ -224,19 +221,21 @@ call_mice <- function(params) {
     }
     dots <- san_dot$dot
   }
-  
-  imp <- impute(df, maxit = params$maxit, m = params$m, 
+
+  imp <- impute(df,
+                maxit = params$maxit,
+                m = params$m,
                 seed = params$seed,
                 blocks = params$blocks,
                 parcel = parcel,
                 predictorMatrix = pm,
                 ignore = ign,
-                where = whr, 
+                where = whr,
                 visitSequence = visitSeq,
                 method = method,
                 formulas = formulas,
                 dots = dots
-                )
+  )
   return(imp)
 }
 
@@ -251,7 +250,7 @@ call_with <- function(data, model, formula) {
       return(e)
     }
   )
-  if(length(mids_data) == 0) {
+  if (length(mids_data) == 0) {
     fit$error <- result
     return(fit)
   }
@@ -268,15 +267,15 @@ call_with <- function(data, model, formula) {
         } else {
           fit$error <- "Model not known"
           return(fit)
-          }
         }
+      }
     },
     error = function(e) {
       return(e)
     }
-  ) 
+  )
 
-  if(length(fit) == 0) {
+  if (length(fit) == 0) {
     fit$error <- result
     return(fit)
   }
@@ -297,7 +296,7 @@ call_pool <- function(data) {
       return(e)
     }
   )
-  if(length(pool) == 0) {
+  if (length(pool) == 0) {
     pool$error <- result
     return(pool)
   }
