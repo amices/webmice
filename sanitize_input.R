@@ -134,7 +134,6 @@ sanitize_parcel <- function(parcel_input) {
     }
   )
   if (is.null(return_list$parcel)) {
-    print(error)
     return_list$error <- result
   }
   return(return_list)

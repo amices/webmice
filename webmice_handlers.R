@@ -40,7 +40,10 @@ pool_handler <- function(.req, .res) {
   .res$set_content_type("text/plain")
 }
 
-#' @rdname pool_handler
+#' @rdname fit_handler
+#'
+#' @param .req Required arguments
+#' @param .res Result
 #' @export
 fit_handler <- function(.req, .res) {
   fit <- list()
@@ -92,6 +95,9 @@ fit_handler <- function(.req, .res) {
 }
 
 #' @rdname impute_longfmt_handler
+#'
+#' @param .req Required arguments
+#' @param .res Result
 #' @export
 impute_longfmt_handler <- function(.req, .res) {
   json_payload <- as.character(.req$parameters_query[["payload"]])
@@ -139,6 +145,9 @@ impute_longfmt_handler <- function(.req, .res) {
 }
 
 #' @rdname example_data_handler
+#'
+#' @param .req Required arguments
+#' @param .res Result
 #' @export
 example_data_handler <- function(.req, .res) {
   data <- list()
@@ -168,7 +177,10 @@ example_data_handler <- function(.req, .res) {
 }
 
 #' @rdname mice_version_handler
-#' @export
+#'
+#' @param .req Required arguments
+#' @param .res Result
+#' @export#' @export
 mice_version_handler <- function(.req, .res) {
   version <- list()
   version$success <- ""

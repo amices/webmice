@@ -30,7 +30,7 @@ md5_string <- function(string) {
 #' json_to_parameters(input)
 #' }
 json_to_parameters <- function(json_payload) {
-  result <- tryCatch(
+  tryCatch(
     {
       params <- fromJSON(json_payload)
       return(params)
