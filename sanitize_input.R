@@ -109,7 +109,7 @@ sanitize_predictorMatrix <- function(param_pred, nvar) {
         "Failure: predictorMatrix is not of the correct size."
       return(return_list)
     }
-    if (!all(param_pred %in% c(0, 1))) {
+    if (!all(param_pred %in% c(-3, -2, -1, 0, 1, 2, 3, 4))) {
       return_list$error <-
         "Failure: predictorMatrix contains non-binary values."
       return(return_list)
