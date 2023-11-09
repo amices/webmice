@@ -52,15 +52,43 @@ imp_result_long_fmt <- function(imp) {
 #' Mice functions
 #' @inheritParams mice::mice
 impute <- function(data, maxit, m, seed, 
-                   blocks, parcel, predictorMatrix) {
+                   blocks, parcel, predictorMatrix, ignore, where,
+                   visitSequence, method, formulas, dots) {
   imp <- list()
   imp$error <- ""
   result <- tryCatch(
     {
-      imp <- mice(data, maxit = maxit, m = m, seed = seed,
+      if (!(is.null(predictorMatrix)) & !(is.null(formulas))) {
+        imp$error <- 
+            "Error: cannot process mix of 'predictorMatrix' and 'formulas' arguments"
+        return(imp)
+      } else {
+        if (!(is.null(predictorMatrix))) {
+          imp <- mice(data, maxit = maxit, m = m, seed = seed,
                   predictorMatrix = predictorMatrix, 
-                  blocks = blocks, parcel = parcel)
-      return(imp)
+                  parcel = parcel,
+                  ignore = ignore, where = where,
+                  visitSequence = visitSequence, method = method,
+                  dots = dots)
+          return(imp)
+        } else {
+          if (!(is.null(formulas))) {
+            imp <- mice(data, maxit = maxit, m = m, seed = seed,
+                  parcel = parcel,
+                  ignore = ignore, where = where,
+                  visitSequence = visitSequence, method = method,
+                  formulas = formulas, dots = dots)
+            return(imp)
+          } else {
+              imp <- mice(data, maxit = maxit, m = m, seed = seed,
+                  parcel = parcel,
+                  ignore = ignore, where = where,
+                  visitSequence = visitSequence, method = method,
+                  dots = dots)
+              return(imp)
+            }
+         }
+       }
     },
     error = function(e) {
       return(e)
@@ -74,7 +102,7 @@ impute <- function(data, maxit, m, seed,
 }
 
 #' Calls mice's imputation function with parameters provided in a list 'params'
-#'
+#
 #' @param params   A list with elements: `data`: A string with the name of the
 #' dataset, a hash from an uploaded file, or a csv file; `maxit`:
 #' number of iterations; `m`: number of imputations, `seed`: seed,
@@ -93,7 +121,7 @@ call_mice <- function(params) {
   nvar <- ncol(df)
 
   if (is.null(params$predictorMatrix)) {
-    pm <- make.predictorMatrix(df)
+    pm <- NULL
   } else {
     san_pm <- sanitize_predictorMatrix(params$predictorMatrix, nvar)
     if (!is.null(san_pm$error)) {
@@ -111,7 +139,6 @@ call_mice <- function(params) {
     parcel <- NULL
   } else {
     san_parcel <- sanitize_parcel(params$parcel)
-    print(san_parcel)
     if (!is.null(san_parcel$error)) {
       imp$error <- san_parcel$error
       return(imp)
@@ -122,12 +149,94 @@ call_mice <- function(params) {
   if (is.null(params$m)) {
     params$m <- 5 #default value
   }
+
+  if (is.null(params$ignore)) {
+    ign <- NULL
+  } else {
+    san_ign <- sanitize_ignore(params$ignore, nobs)
+    if (!is.null(san_ign$error)) {
+      imp$error <- san_ign$error
+      return(imp)
+    }
+    ign <- san_ign$ign
+  }
+
+  if (is.null(params$where)) {
+    whr <- is.na(df)
+  } else {
+    san_whr <- sanitize_where(params$where, nobs, nvar)
+    if (!is.null(san_whr$error)) {
+      imp$error <- san_whr$error
+      return(imp)
+    }
+    whr <- san_whr$whr
+  }
+
+  if (is.null(params$visitSeq)) {
+    visitSeq <- NULL
+  } else {
+    if (typeof(params$visitSeq) == "character") {
+      visitSeq <- params$visitSeq
+    } else {
+       imp$error <- "VisitSequence is not a vector of type character."
+       return(imp)
+    }
+  }
+
+  if (is.null(params$method)) {
+    method <- NULL
+  } else {
+    if(typeof(params$method) == "character" | is.vector(params$method)) {
+      method <- params$method
+    } else {
+      imp$error <- "Method is not a vector or character."
+      return(imp)
+    }
+  }
+
+  if (is.null(params$formulas)) {
+    formulas <- NULL
+  } else {
+    if (is.null(params$parcel)) {
+      san_form <- sanitize_formula(params$formulas, names(df))
+    } else {
+      san_form <- sanitize_formula(params$formulas, names(parcel))
+    }
+    if(!is.null(san_form$error)){
+      imp$error <- san_form$error
+      return(imp)
+    } else {
+      formulas <- san_form
+    }
+  }
+  
+  if (is.null(params$dots)) {
+    dots <- NULL
+  } else {
+    if (is.null(params$parcel)) {
+      san_dot <- sanitize_dots(params$dots, names(df))
+    } else {
+      san_dot <- sanitize_dots(params$dots, names(parcel))
+    }
+    if (!is.null(san_dot$error)) {
+      imp$error <- san_dot$error
+      return(imp)
+    }
+    dots <- san_dot$dot
+  }
   
   imp <- impute(df, maxit = params$maxit, m = params$m, 
                 seed = params$seed,
                 blocks = params$blocks,
                 parcel = parcel,
-                predictorMatrix = pm)
+                predictorMatrix = pm,
+                ignore = ign,
+                where = whr, 
+                visitSequence = visitSeq,
+                method = method,
+                formulas = formulas,
+                dots = dots
+                )
   return(imp)
 }
 

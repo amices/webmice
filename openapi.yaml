@@ -86,13 +86,13 @@ paths:
       parameters:
         - name: "payload"
           description: "Json with keys \"data\", \"maxit\", \"m\", \"seed\", 
-              \"predictorMatrix\" (optional), \"blocks\" (optional)" 
+              \"predictorMatrix\" (optional), \"blocks\" (optional), \"ignore\" (optional),
+              \"where\" (optional), \"visitSeq\" (optional), \"method\" (optional), 
+              \"formula\" (optional), \"dots\" (optional)" 
           in: query
           schema:
             type: string
-          example: "{\"data\":\"nhanes\",\"maxit\":2,\"m\":2,\"seed\":1,
-          \"predictorMatrix\":[[0,1,1,1],[1,0,1,1],[1,1,0,1],[1,1,1,0]],
-          \"blocks\": {\"b1\": [\"chl\", \"hyp\"], \"b2\": [\"bmi\"]}}"
+          example: "{\"data\":\"nhanes\",\"maxit\":2,\"m\":2,\"seed\":1}"
           required: true
       responses:
         200:

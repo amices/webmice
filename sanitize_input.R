@@ -140,3 +140,141 @@ sanitize_parcel <- function(parcel_input) {
   }
   return(return_list)
 }
+
+#' Takes the content of the ignore parameter from a call to the impute endpoint
+#' and returns a logical vector.
+#'
+#' @param param_ign a vector of length n (where n is the number of rows in the
+#' dataset)
+#' @param nobs Number of rows in the dataset.
+sanitize_ignore <- function(param_ign, nobs) {
+  return_list <- list()
+  
+  if (is.vector(param_ign)) {
+    if (length(param_ign) != nobs) {
+      return_list$error <-
+        "Failure: `ignore` vector is not of the correct size."
+      return(return_list)
+    }
+
+    if (!is.logical(param_ign)) {
+      return_list$error <-
+        "Failure: `ignore` vector contains non-logical values."
+      return(return_list)
+    }
+
+    return_list$ign <- param_ign
+    return(return_list)
+  }
+  
+  return_list$error <- 
+    "Failure: unrecognized format for `ignore` parameter."
+  return(return_list)
+}
+
+#' Takes the content of the where parameter from a call to the impute endpoint
+#' and returns a matrix.
+#'
+#' @param param_where A matrix of size n \* p or a vector of length n \* p
+#' (where n is the number of rows in the dataset and p is the number of columns)
+#' that can be converted to a matrix (reading by row).
+#' @param nobs Number of rows in the dataset.
+#' @param nvar Number of columns in the dataset.
+sanitize_where <- function(param_where, nobs, nvar) {
+  return_list <- list()
+  
+  if (is.vector(param_where)) {
+    if (length(param_where) != nobs * nvar) {
+      return_list$error <-
+        "Failure: `where` matrix is not of the correct size."
+      return(return_list)
+    }
+    param_where <- matrix(param_where, nrow = nobs, byrow = TRUE)
+  }
+  
+  if (is.matrix(param_where)) {
+    if (nrow(param_where) != nobs) {
+      return_list$error <- 
+        "Failure: `where` matrix is not of the correct size."
+      return(return_list)
+    }
+    if (ncol(param_where) != nvar) {
+      return_list$error <-
+        "Failure: `where` matrix is not of the correct size."
+      return(return_list)
+    }
+    if (!is.logical(param_where)) {
+      return_list$error <-
+        "Failure: `where` matrix contains non-logical values."
+      return(return_list)
+    }
+    return_list$whr <- param_where
+    return(return_list)
+  }
+  
+  return_list$error <- 
+    "Failure: unrecognized format for `where` parameter."
+  return(return_list)
+}
+
+#' Takes the content of the formula parameter and the variables/parcels from a call to the 
+#' impute endpoint and checks whether all variables in the formula match the dataset variables 
+#' or parcel names.
+#'
+#' @param param_formula A list of strings which can be converted to formulas
+#' @param parcel_names Parcel names or dataset variable names
+sanitize_formula <- function(param_formula, parcel_names) {
+  return_list <- list()
+  valid_formulas <- list()
+  for (f in param_formula) {
+    vars <- all.vars(as.formula(f))
+    if (all(vars %in% parcel_names)) {
+      valid_formulas <- append(valid_formulas, as.formula(f))
+    }
+    else {
+      return_list$error <- c("Formula contains unknown variable", f)
+      return(return_list)
+    }
+  }
+  return_list <- valid_formulas
+  return(return_list)
+}
+
+#' Takes the content of the dots parameter from a call to the impute endpoint
+#' and returns a named list.
+#'
+#' @param param_where A named list containing at most q lists (one for each
+#' parcel) of arguments to pass down to other imputation methods.
+#' @param parcel_names Parcel names or dataset variable names
+sanitize_dots <- function(param_dots, parcel_names) {
+  return_list <- list()
+  
+  if (is.list(param_dots)) {
+    if (length(unique(names(param_dots))) < length(names(param_dots))) {
+      return_list$error <- 
+        "Failure: duplicate names in `dots` argument."
+      return(return_list)
+    }
+
+    if (!all(names(param_dots) %in% parcel_names)) {
+      return_list$error <- 
+        "Failure: unknown key(s) in `dots` argument."
+      return(return_list)
+    }
+    
+    for (dot in param_dots) {
+      if (!is.list(dot)) {
+        return_list$error <- 
+          "Failure: unrecognized format for element in `dots` parameter."
+        return(return_list)
+      }
+    }
+
+    return_list$dot <- param_dots
+    return(return_list)
+  }
+
+  return_list$error <- 
+    "Failure: unrecognized format for `dots` parameter."
+  return(return_list)
+}
