@@ -87,24 +87,12 @@ paths:
         - name: "payload"
           description: "Json with keys \"data\", \"maxit\", \"m\", \"seed\", 
               \"predictorMatrix\" (optional), \"blocks\" (optional), \"ignore\" (optional),
-              \"where\" (optional)" 
+              \"where\" (optional), \"visitSeq\" (optional), \"method\" (optional), 
+              \"formula\" (optional)" 
           in: query
           schema:
             type: string
-          example: "{\"data\":\"nhanes\",\"maxit\":2,\"m\":2,\"seed\":1,
-          \"predictorMatrix\":[[0,1,1,1],[1,0,1,1],[1,1,0,1],[1,1,1,0]],
-          \"blocks\": {\"b1\": [\"chl\", \"hyp\"], \"b2\": [\"bmi\"]},
-          \"ignore\":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,
-          true,false,false,false,false,false,false,false,false,false,false],
-          \"where\":[[false,true,true,true],[false,false,false,false],[false,true,false,false],
-          [false,true,true,true],[false,false,false,false],[false,true,true,false],
-          [false,false,false,false],[false,false,false,false],[false,false,false,false],
-          [false,true,true,true],[false,true,true,true],[false,true,true,true],
-          [false,false,false,false],[false,false,false,false],[false,false,false,true],
-          [false,true,true,true],[false,false,false,false],[false,false,false,false],
-          [false,false,false,false],[false,false,false,true],[false,true,true,true],
-          [false,false,false,false],[false,false,false,false],[false,false,false,true],
-          [false,false,false,false]]}"
+          example: "{\"data\":\"nhanes\",\"maxit\":2,\"m\":2,\"seed\":1}"
           required: true
       responses:
         200:

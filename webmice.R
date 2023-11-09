@@ -3,6 +3,7 @@ library(mice, warn.conflicts = FALSE)
 library(jsonlite)
 library(readr)
 library(digest)
+library(stringr)
 
 #' Parameters
 #' Code location in Docker, set through bash variable

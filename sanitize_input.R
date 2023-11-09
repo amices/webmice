@@ -216,3 +216,26 @@ sanitize_where <- function(param_where, nobs, nvar) {
     "Failure: unrecognized format for `where` parameter."
   return(return_list)
 }
+
+#' Takes the content of the formula parameter and the variables/parcels from a call to the 
+#' impute endpoint and checks whether all variables in the formula match the dataset variables 
+#' or parcel names.
+#'
+#' @param param_formula A list of strings which can be converted to formulas
+#' @param parcel_names Parcel names or dataset variable names
+sanitize_formula <- function(param_formula, parcel_names) {
+  return_list <- list()
+  valid_formulas <- list()
+  for (f in param_formula) {
+    vars <- all.vars(as.formula(f))
+    if (all(vars %in% parcel_names)) {
+      valid_formulas <- append(valid_formulas, as.formula(f))
+    }
+    else {
+      return_list$error <- c("Formula contains unknown variable", f)
+      return(return_list)
+    }
+  }
+  return_list <- valid_formulas
+  return(return_list)
+}
