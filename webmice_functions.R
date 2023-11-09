@@ -66,21 +66,21 @@ impute <- function(data, maxit, m, seed,
         if (!(is.null(predictorMatrix))) {
           imp <- mice(data, maxit = maxit, m = m, seed = seed,
                   predictorMatrix = predictorMatrix, 
-                  blocks = blocks, parcel = parcel,
+                  parcel = parcel,
                   ignore = ignore, where = where,
                   visitSequence = visitSequence, method = method)
           return(imp)
         } else {
           if (!(is.null(formula))) {
             imp <- mice(data, maxit = maxit, m = m, seed = seed,
-                  blocks = blocks, parcel = parcel,
+                  parcel = parcel,
                   ignore = ignore, where = where,
                   visitSequence = visitSequence, method = method,
                   formulas = formula)
             return(imp)
           } else {
               imp <- mice(data, maxit = maxit, m = m, seed = seed,
-                  blocks = blocks, parcel = parcel,
+                  parcel = parcel,
                   ignore = ignore, where = where,
                   visitSequence = visitSequence, method = method)
               return(imp)
@@ -192,13 +192,13 @@ call_mice <- function(params) {
     }
   }
 
-  if (is.null(params$formula)) {
+  if (is.null(params$formulas)) {
     formula <- NULL
   } else {
     if (is.null(params$parcel)) {
-      san_form <- sanitize_formula(params$formula, names(df))
+      san_form <- sanitize_formula(params$formulas, names(df))
     } else {
-      san_form <- sanitize_formula(params$formula, names(parcel))
+      san_form <- sanitize_formula(params$formulas, names(parcel))
     }
     if(!is.null(san_form$error)){
       imp$error <- san_form$error

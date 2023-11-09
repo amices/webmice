@@ -229,7 +229,7 @@ sanitize_formula <- function(param_formula, parcel_names) {
   for (f in param_formula) {
     vars <- all.vars(as.formula(f))
     if (all(vars %in% parcel_names)) {
-      append(valid_formulas, as.formula(f))
+      valid_formulas <- append(valid_formulas, as.formula(f))
     }
     else {
       return_list$error <- c("Formula contains unknown variable", f)
