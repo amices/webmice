@@ -89,7 +89,6 @@ fit_handler <- function(.req, .res) {
       fit$error <- fitres$error
     }
   }
-  print(fit)
   .res$set_body(toJSON(fit, force = TRUE))
   .res$set_content_type("text/plain")
 }
@@ -102,29 +101,34 @@ fit_handler <- function(.req, .res) {
 impute_longfmt_handler <- function(.req, .res) {
   json_payload <- as.character(.req$parameters_query[["payload"]])
   impute <- list()
-  impute$result <- ""
-  impute$error <- ""
-  check <- TRUE
 
+  check <- TRUE
   if (length(json_payload) == 0L) {
     check <- FALSE
     impute$error <- "No input"
+  } else {
+    # check if convertible to json
+    params <- json_to_parameters(json_payload)
+    if (is.null(params)) {
+      check <- FALSE
+      impute$error <- "Input format error, not a json"
+    } else {
+      # impute function needs data
+      if (is.null(params$data)) {
+        check <- FALSE
+        impute$error <- "No data"
+      }
+      if (is.null(params$maxit)) {
+        check <- FALSE
+        impute$error <- "No maxit"
+      }
+      if (is.null(params$seed)) {
+        check <- FALSE
+        impute$error <- "No seed"
+      }
+    }
   }
-  # check if convertible to json
-  params <- json_to_parameters(json_payload)
-  # impute function needs data
-  if (is.null(params$data)) {
-    check <- FALSE
-    impute$error <- "No data"
-  }
-  if (is.null(params$maxit)) {
-    check <- FALSE
-    impute$error <- "No maxit"
-  }
-  if (is.null(params$seed)) {
-    check <- FALSE
-    impute$error <- "No seed"
-  }
+
   if (!check) {
     impute$success <- FALSE
     .res$set_body(toJSON(impute))

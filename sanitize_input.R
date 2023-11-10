@@ -245,7 +245,6 @@ sanitize_formula <- function(param_formula, parcel_names) {
 #' @param parcel_names Parcel names or dataset variable names
 sanitize_dots <- function(param_dots, parcel_names) {
   return_list <- list()
-
   if (is.list(param_dots)) {
     if (length(unique(names(param_dots))) < length(names(param_dots))) {
       return_list$error <-
