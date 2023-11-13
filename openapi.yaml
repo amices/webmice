@@ -30,7 +30,7 @@ paths:
             text/json:
               schema:
                 type: string
-                example: {"mice":["3.14.0"]}
+                example: {"success":[true],"error":[""],"result":["3.16.4"]}
         
   /exampledata:
     get:
@@ -52,10 +52,10 @@ paths:
             text/json:
               schema:
                 type: string
-                example: {"age":[1,2,1],"bmi":[null,22.7,null],"hyp":[null,1,1],"chl":[null,187,187]}
-        400:
-          description: Bad Request, not a valid example dataset.
-
+                example: {"success":[true],"result":[{"age":1},{"age":2,"bmi":22.7,"hyp":1,"chl":187},
+                    {"age":1,"hyp":1,"chl":187},{"age":3},
+                    {"age":2,"bmi":27.4,"hyp":1,"chl":186}],"error":[""]}
+  
   /data:
     post:
       tags:
@@ -70,7 +70,6 @@ paths:
                 csvfile:
                   type: string
                   format: binary
-
       responses:
         200:
           description: API response
@@ -78,6 +77,7 @@ paths:
             text/plain:
               schema:
               type: string
+  
   /long:
     get:
       tags:
@@ -85,7 +85,10 @@ paths:
       description: Run mice imputation on a datasets (nhanes, nhanes2) or an own csv file.
       parameters:
         - name: "payload"
-          description: "Json with keys \"data\", \"maxit\", \"m\", \"seed\"" 
+          description: "Json with keys \"data\", \"maxit\", \"m\", \"seed\", 
+              \"predictorMatrix\" (optional), \"blocks\" (optional), \"ignore\" (optional),
+              \"where\" (optional), \"visitSeq\" (optional), \"method\" (optional), 
+              \"formula\" (optional), \"dots\" (optional)" 
           in: query
           schema:
             type: string
@@ -98,9 +101,13 @@ paths:
             text/json:
               schema:
                 type: string
-                example: "{\"age\":{\"1\":[],\"2\":[]},\"bmi\":{\"1\":[30.1,33.2,27.4],\"2\":[30.1,27.2,21.7]},\"hyp\":{\"1\":[1,2,1],\"2\":[1,2,2]},\"chl\":{\"1\":[187,218,238],\"2\":[187,218,187]}}"
-        400:
-          description: Bad Request.
+                example: {"result":[{"age":1,"bmi":30.1,"hyp":1,"chl":187,".imp":1,".id":"1"},
+                    {"age":2,"bmi":22.7,"hyp":1,"chl":187,".imp":1,".id":"2"},
+                    {"age":1,"bmi":27.5,"hyp":1,"chl":131,".imp":2,".id":"23"},
+                    {"age":3," bmi":24.9,"hyp":1,"chl":218,".imp":2,".id":"24"},
+                    {"age":2,"bmi":27.4,"hyp":1,"chl":186,".imp":2,".id":"25"}],
+                    "error":[""],"success":[true]}
+  
   /fit:
     get:
       tags:
@@ -112,7 +119,8 @@ paths:
           in: query
           schema:
             type: string
-          example: "{\"data\": [{\".imp\":1,\".id\":1,\"age\":1,\"bmi\":30.1,\"hyp\":1,\"chl\":187}], \"model\":[\"lm\"], \"formula\":[\"chl ~ age + bmi\"]}"
+          example: "{\"data\": [{\".imp\":1,\".id\":1,\"age\":1,\"bmi\":30.1,\"hyp\":1,\"chl\":187}],
+              \"model\":[\"lm\"], \"formula\":[\"chl ~ age + bmi\"]}"
           required: true
       responses:
         200:
@@ -121,9 +129,10 @@ paths:
             text/json:
               schema:
                 type: string
-                example: "{\"coefficients\":[-16.8639,43.8989,5.0529],\"residuals\":[7.8716,1.3645, ...]}"
-        400:
-          description: Bad Request.
+                example: {"result":{"call":{},"terms":{},"residuals":[0],
+                    "coefficients":[[187,"NaN","NaN","NaN"]],"aliased":[false,true,true],
+                    "sigma":["NaN"],"df":[1,0,3],"adj.r.squared":[0],"r.squared":[0],
+                    "cov.unscaled":[[1]]},"error":[""],"success":[true]}
 
   /pool:
     get:
@@ -137,7 +146,16 @@ paths:
           in: query
           schema:
             type: string
-          example: "{\"data\": [{\"term\":\"(Intercept)\",\"estimate\":23.9357,\"std.error\":3.8732,\"statistic\":6.1798,\"p.value\":3.2106e-06,\"nobs\":25,\"df.residual\":22},{\"term\":\"hyp\",\"estimate\":1.1677,\"std.error\":1.6218,\"statistic\":0.72,\"p.value\":0.4791,\"nobs\":25,\"df.residual\":22},{\"term\":\"chl\",\"estimate\":0.0063,\"std.error\":0.0185,\"statistic\":0.3385,\"p.value\":0.7382,\"nobs\":25,\"df.residual\":22},{\"term\":\"(Intercept)\",\"estimate\":24.5434,\"std.error\":4.7611,\"statistic\":5.155,\"p.value\":0,\"nobs\":25,\"df.residual\":22},{\"term\":\"hyp\",\"estimate\":1.5843,\"std.error\":2.236,\"statistic\":0.7086,\"p.value\":0.486,\"nobs\":25,\"df.residual\":22},{\"term\":\"chl\",\"estimate\":-0.0032,\"std.error\":0.0205,\"statistic\":-0.1569,\"p.value\":0.8768,\"nobs\":25,\"df.residual\":25}]}"
+          example: "{\"data\": [{\"term\":\"(Intercept)\",\"estimate\":23.9357,\"std.error\":3.8732,
+              \"statistic\":6.1798,\"p.value\":3.2106e-06,\"nobs\":25,\"df.residual\":22},
+              {\"term\":\"hyp\",\"estimate\":1.1677,\"std.error\":1.6218,\"statistic\":0.72,
+              \"p.value\":0.4791,\"nobs\":25,\"df.residual\":22},{\"term\":\"chl\",\"estimate\":0.0063,
+              \"std.error\":0.0185,\"statistic\":0.3385,\"p.value\":0.7382,\"nobs\":25,\"df.residual\":22},
+              {\"term\":\"(Intercept)\",\"estimate\":24.5434,\"std.error\":4.7611,\"statistic\":5.155,
+              \"p.value\":0,\"nobs\":25,\"df.residual\":22},{\"term\":\"hyp\",\"estimate\":1.5843,
+              \"std.error\":2.236,\"statistic\":0.7086,\"p.value\":0.486,\"nobs\":25,\"df.residual\":22},
+              {\"term\":\"chl\",\"estimate\":-0.0032,\"std.error\":0.0205,\"statistic\":-0.1569,
+              \"p.value\":0.8768,\"nobs\":25,\"df.residual\":25}]}"
           required: true
       responses:
         200:
@@ -146,6 +164,7 @@ paths:
             text/json:
               schema:
                 type: string
-                example: "[{\"term\":\"(Intercept)\",\"m\":2,\"estimate\":24.2396,\"std.error\":4.3717,\"statistic\":5.5446,\"df\":19.8636,\"p.value\":0,\"conf.low\":15.1163,\"conf.high\":33.3628,\"riv\":0.0147,\"lambda\":0.0145,\"fmi\":0.1007,\"ubar\":18.8351,\"b\":0.1846,\"t\":19.112,\"dfcom\":22}]"
-        400:
-          description: Bad Request.
+                example: {"term":"(Intercept)","m":2,"estimate":24.2396,"std.error":4.3717,
+                    "statistic":5.5446,"df":19.8636,"p.value":0,"conf.low":15.1163,
+                    "conf.high":33.3628,"riv":0.0147,"lambda":0.0145,"fmi":0.1007,
+                    "ubar":18.8351,"b":0.1846,"t":19.112,"dfcom":22}
