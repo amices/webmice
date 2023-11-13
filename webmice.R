@@ -8,7 +8,7 @@ library(stringr)
 #' Parameters
 #' Code location in Docker, set through bash variable
 base_folder <- Sys.getenv("WEBMICE_LOC")
-if(base_folder == "") {
+if (base_folder == "") {
   base_folder <- getwd()
   print('No base folder for webmice set (export WEBMICE_LOC="directory").')
   print(paste("Set to: ", base_folder))
@@ -20,13 +20,13 @@ source(file.path(base_folder, "webmice_functions.R"))
 source(file.path(base_folder, "sanitize_input.R"))
 
 #' Data upload location
-data_uploads = file.path(base_folder, "data_uploads")
-if(!file.exists(data_uploads)){
+data_uploads <- file.path(base_folder, "data_uploads")
+if (!file.exists(data_uploads)) {
   dir.create(data_uploads)
 }
 
 #' Application
-webmice = Application$new()
+webmice <- Application$new()
 
 #' Endpoints
 webmice$add_post(
@@ -50,10 +50,11 @@ webmice$add_get(path = "/long", FUN = impute_longfmt_handler)
 webmice$add_get(path = "/fit", FUN = fit_handler)
 webmice$add_get(path = "/pool", FUN = pool_handler)
 
-#' Swagger 
-yaml_file = file.path(base_folder, "openapi.yaml")
+#' Swagger
+yaml_file <- file.path(base_folder, "openapi.yaml")
 webmice$add_openapi(path = "/openapi.yaml", file_path = yaml_file)
-webmice$add_swagger_ui(path = "/doc", path_openapi = "/openapi.yaml", use_cdn = TRUE)
+webmice$add_swagger_ui(path = "/doc", path_openapi = "/openapi.yaml",
+                       use_cdn = TRUE)
 
-backend = BackendRserve$new()
+backend <- BackendRserve$new()
 backend$start(webmice, http_port = 8080)

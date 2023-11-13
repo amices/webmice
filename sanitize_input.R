@@ -1,11 +1,12 @@
-#' Takes a dataframe and checks for all columns thta consist of strings that there are only 50
-#' unique values.
+#' Takes a dataframe and checks for all columns that consist of strings that
+#' there are only 50 unique values.
 #'
 #' @param data An R dataframe
 check_factors <- function(data) {
   cols <- names(data)
   for (c in cols) {
-    if (unique(sapply(data[[c]], typeof)) == list('character') & length(levels(factor(data[[c]]))) > 50) {
+    if (unique(sapply(data[[c]], typeof)) == list("character") &&
+          length(levels(factor(data[[c]]))) > 50) {
       return(paste("Too many factors", c, length(levels(factor(data[[c]])))))
     }
   }
@@ -46,8 +47,7 @@ sanitize_data <- function(param_data) {
     df <- read_file(param_data)
     if (is.null(df)) {
       return_list$error <- "Failure: reading local csv file"
-    }
-    else {
+    } else {
       check <- check_factors(df)
       if (check == "") {
         return_list$df <- df
@@ -64,8 +64,7 @@ sanitize_data <- function(param_data) {
     if (is.null(df)) {
       return_list$error <-
         "Failure: reading file, not an example dataset or file on server"
-    }
-    else {
+    } else {
       check <- check_factors(df)
       if (check == "") {
         return_list$df <- df
@@ -119,7 +118,7 @@ sanitize_predictorMatrix <- function(param_pred, nvar) {
     return(return_list)
   }
 
-  return_list$error <- 
+  return_list$error <-
     "Failure: unrecognized format for `predictorMatrix` parameter."
   return(return_list)
 }
@@ -135,7 +134,6 @@ sanitize_parcel <- function(parcel_input) {
     }
   )
   if (is.null(return_list$parcel)) {
-    print(error)
     return_list$error <- result
   }
   return(return_list)
@@ -149,7 +147,7 @@ sanitize_parcel <- function(parcel_input) {
 #' @param nobs Number of rows in the dataset.
 sanitize_ignore <- function(param_ign, nobs) {
   return_list <- list()
-  
+
   if (is.vector(param_ign)) {
     if (length(param_ign) != nobs) {
       return_list$error <-
@@ -166,8 +164,8 @@ sanitize_ignore <- function(param_ign, nobs) {
     return_list$ign <- param_ign
     return(return_list)
   }
-  
-  return_list$error <- 
+
+  return_list$error <-
     "Failure: unrecognized format for `ignore` parameter."
   return(return_list)
 }
@@ -182,7 +180,7 @@ sanitize_ignore <- function(param_ign, nobs) {
 #' @param nvar Number of columns in the dataset.
 sanitize_where <- function(param_where, nobs, nvar) {
   return_list <- list()
-  
+
   if (is.vector(param_where)) {
     if (length(param_where) != nobs * nvar) {
       return_list$error <-
@@ -191,10 +189,10 @@ sanitize_where <- function(param_where, nobs, nvar) {
     }
     param_where <- matrix(param_where, nrow = nobs, byrow = TRUE)
   }
-  
+
   if (is.matrix(param_where)) {
     if (nrow(param_where) != nobs) {
-      return_list$error <- 
+      return_list$error <-
         "Failure: `where` matrix is not of the correct size."
       return(return_list)
     }
@@ -211,15 +209,15 @@ sanitize_where <- function(param_where, nobs, nvar) {
     return_list$whr <- param_where
     return(return_list)
   }
-  
-  return_list$error <- 
+
+  return_list$error <-
     "Failure: unrecognized format for `where` parameter."
   return(return_list)
 }
 
-#' Takes the content of the formula parameter and the variables/parcels from a call to the 
-#' impute endpoint and checks whether all variables in the formula match the dataset variables 
-#' or parcel names.
+#' Takes the content of the formula parameter and the variables/parcels from a
+#' call to the impute endpoint and checks whether all variables in the formula
+#' match the dataset variables or parcel names.
 #'
 #' @param param_formula A list of strings which can be converted to formulas
 #' @param parcel_names Parcel names or dataset variable names
@@ -230,8 +228,7 @@ sanitize_formula <- function(param_formula, parcel_names) {
     vars <- all.vars(as.formula(f))
     if (all(vars %in% parcel_names)) {
       valid_formulas <- append(valid_formulas, as.formula(f))
-    }
-    else {
+    } else {
       return_list$error <- c("Formula contains unknown variable", f)
       return(return_list)
     }
@@ -248,23 +245,22 @@ sanitize_formula <- function(param_formula, parcel_names) {
 #' @param parcel_names Parcel names or dataset variable names
 sanitize_dots <- function(param_dots, parcel_names) {
   return_list <- list()
-  
   if (is.list(param_dots)) {
     if (length(unique(names(param_dots))) < length(names(param_dots))) {
-      return_list$error <- 
+      return_list$error <-
         "Failure: duplicate names in `dots` argument."
       return(return_list)
     }
 
     if (!all(names(param_dots) %in% parcel_names)) {
-      return_list$error <- 
+      return_list$error <-
         "Failure: unknown key(s) in `dots` argument."
       return(return_list)
     }
-    
+
     for (dot in param_dots) {
       if (!is.list(dot)) {
-        return_list$error <- 
+        return_list$error <-
           "Failure: unrecognized format for element in `dots` parameter."
         return(return_list)
       }
@@ -274,7 +270,7 @@ sanitize_dots <- function(param_dots, parcel_names) {
     return(return_list)
   }
 
-  return_list$error <- 
+  return_list$error <-
     "Failure: unrecognized format for `dots` parameter."
   return(return_list)
 }
