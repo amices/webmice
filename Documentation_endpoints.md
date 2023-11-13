@@ -9,14 +9,17 @@
 
 ## The impute endpoint *long*
 The function `mice` takes a lot of different arguments.
-Required arguments:
+
+**Required arguments**:
 
 - data: full path to a csv file, name of an example dataset in the mice package or a hash from the data endpoint
 - maxit: as defined in mice, integer number
 - m: as defined in mice, integer number
 - seed: as defined in mice, integer number
 
-Optional arguments:
+**The endpoint returns** `mice:complete(, "long", include = TRUE)`; the return value includes the original data to be compatible with the *fit* endpoint.
+
+Optional input arguments:
 
 - *predictorMatrix*: a list of numbers of length columns x columns; a matrix of size columns x columns; 
  
