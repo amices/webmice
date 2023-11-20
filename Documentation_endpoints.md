@@ -1,6 +1,6 @@
 # Webmice REST API
 ## Endpoints
-- version: get the current mioce version
+- version: get the current mice version
 - data/exampledata: get example data by its name
 - data: upload a csv to the HTTP server, retrieve a hash `data_token` to reuse the data
 - long: long format of the imputed data
@@ -37,7 +37,7 @@ Optional input arguments:
  Example:
 > "ignore":[true,true,true,true,true,true,true,true,true,true,true,true,true,true, true,false,false,false,false,false,false,false,false,false,false]
 
-- *where*: a list of length rows x columns, or a matrix of the same size as the data, of avlues true and false
+- *where*: a list of length rows x columns, or a matrix of the same size as the data, of values true and false
 
  Example:
 > "where":[[false,true,true,true],[false,false,false,false],[false,true,false,false], [false,true,true,true],[false,false,false,false],[false,true,true,false], [false,false,false,false],[false,false,false,false],[false,false,false,false], [false,true,true,true],[false,true,true,true],[false,true,true,true], [false,false,false,false],[false,false,false,false],[false,false,false,true], [false,true,true,true],[false,false,false,false],[false,false,false,false], [false,false,false,false],[false,false,false,true],[false,true,true,true], [false,false,false,false],[false,false,false,false],[false,false,false,true], [false,false,false,false]]
@@ -57,7 +57,7 @@ Optional input arguments:
  Example:
 > "formulas":["bmi ~ age", "bmi ~ hyp"]
 
-- *"dots"*: a named list of with for each parcel (optionally) a list of argments to pass down optional arguments to lower level imputation functions.
+- *"dots"*: a named list of with for each parcel (optionally) a list of arguments to pass down optional arguments to lower level imputation functions.
 
  Example:
 > "dots":{"age":{"donor":20}} 
