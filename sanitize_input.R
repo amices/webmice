@@ -65,6 +65,7 @@ sanitize_data <- function(param_data) {
       return_list$error <-
         "Failure: reading file, not an example dataset or file on server"
     } else {
+      print("DEBUG: Number of rows read: ", nrow(df))
       check <- check_factors(df)
       if (check == "") {
         return_list$df <- df
