@@ -112,24 +112,28 @@ Raw call
 ```{r}
 resp <- request("http://localhost:8080/long?payload=%7B%22data%22%3A%22nhanes%22%2C%22maxit%22%3A2%2C%22m%22%3A2%2C%22seed%22%3A1%7D") %>% 
   req_method("GET") %>% 
-  req_headers(
-    accept = "text/json",
-  ) %>% 
+  req_headers(accept = "text/json") %>% 
   req_perform()
 ret <- resp |> 
   resp_body_string() |> 
   fromJSON()
-ret
+head(ret$result)
 ```
 
-User-friendly call
+A more user-friendly call
 
-```{bash, eval=FALSE}
-curl -X 'GET' \
-  $(cat .host)/long?payload='%7B%22data%22%3A%22boys%22%2C%22maxit%22%3A2%2C%22m%22%3A2%2C%22seed%22%3A1%7D' \
-  -H 'accept: text/json' > boys_imputed_2.json
+```{r, eval=TRUE}
+req <- request(host) |> 
+  req_headers(accept = "text/json") |> 
+  req_url_path("/long") |> 
+  req_url_query(payload = '{"data":"nhanes","maxit":2,"m":1,"seed":1}')
+req |> req_dry_run()
+resp <- req_perform(req)
+ret <- resp |> 
+  resp_body_string() |> 
+  fromJSON()
+head(ret$result)
 ```
-
 
 ##### **`/data`**: Upload data
 
@@ -149,18 +153,20 @@ resp_header(resp, "data_token")
 
 The file is uploaded to the server. The `data_token` header may be used for subsequent requests to refer to the uploaded data.
 
-##### **`/long`**: Impute data, return long form
+##### **`/long`**: Impute data using the token (not yet working)
 
-```{r impute_r, eval=FALSE}
+```{r impute_r, eval=TRUE}
 token <- resp_header(resp, "data_token")
 req <- request(host) |> 
   req_url_path("/long") |> 
-  req_headers("accept" = "text/plain", 
-              "content-type" = "multipart/form-data") |>
-  req_body_multipart(csvfile = input)
+  req_url_query(payload = paste0('{"data":', token, ',"maxit":2,"m":1,"seed":1}')) |> 
+  req_headers("accept" = "text/json")
 req_dry_run(req)
 resp <- req |> req_perform()
-resp_header(resp, "data_token")
+ret <- resp |> 
+  resp_body_string() |> 
+  fromJSON()
+ret
 ```
 
 
@@ -229,21 +235,12 @@ curl -X 'GET' \
   -H 'accept: text/json' > boys_imputed_1.json
 ```
 
-User-friendly call
+A more user-friendly call (does not work)
 
-```{bash}
+```{bash, eval=FALSE}
 curl -X 'GET' \
-  $(cat .host)/long?payload='%7B%22data%22%3A%22boys%22%2C%22maxit%22%3A2%2C%22m%22%3A2%2C%22seed%22%3A1%7D' \
+  $(cat .host)/long?payload='{"data":"nhanes","maxit":2,"m":1,"seed":1}' \
   -H 'accept: text/json' > boys_imputed_2.json
-```
-
-Non-working
-
-```{bash eval=FALSE}
-curl -X 'GET' \
-  $(cat .host)/long?payload='%7B%22data%22%3A%22boys%22%2C%22maxit%22%3A2%2C%22m%22%3A2%2C%22seed%22%3A1%7D' \
-  -H 'accept: text/json' \
-  > boys_imputed.json_3
 ```
 
 ### {-}
@@ -253,9 +250,9 @@ curl -X 'GET' \
 ### Internal
 
 | Description                                           | Status                                  |
-  |:------------------------------------------------------|:----------------------------------------|
+|:------------------------------------------------------|:----------------------------------------|
 
 ### External
   
-  | Description                                           | Status                                  |
-  |:------------------------------------------------------|:----------------------------------------|
+| Description                                           | Status                                  |
+|:------------------------------------------------------|:----------------------------------------|
