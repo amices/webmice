@@ -1,0 +1,531 @@
+---
+title: WEBMICE - 
+subtitle: webmice 0.0.1 (December 2023)
+author: 
+output:
+  html_document:
+  number_sections: false
+  self-contained: true
+theme: united
+editor_options: 
+  chunk_output_type: console
+---
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+```
+
+## Overview
+
+WEBMICE is a web service for imputing and analysing incomplete datasets. WEBMICE provides a language-independent API to the functionality of the MICE R package. 
+It can 
+
+1. read data from local system of the client;
+2. create multiple complete versions from incomplete data;
+3. analyse each of the imputed datasets;
+4. pool the analyses results into one result.
+
+WEBMICE is a RESTful API that runs on a (remote) host. In principle, any `HTTP` client will work with WEBMICE. The following sections illustrate how a client can make requests to WEBMICE using various client languages. 
+
+### Primary WEBMICE end points
+
+  | Verb  | API Endpoint          | Description                                | Maps to `mice` function |
+  |:------|:-------------------------- |:------------------------------------------ |:-------------------------|
+  | GET  | `/version`       | Get the `mice`'s version                          | `utils::packageVersion("mice")`          |
+  | GET  | `/exampledata`       | Get example of an incomplete data (`nhanes` and `nhanes2`)            | `mice::nhanes`  or `mice::nhanes2`   |
+  | POST  | `/data`       | Upload an incomplete data in CSV format                          |          |
+  | GET  | `/long`       | Impute missing data            | `mice::mice()`    
+  |
+  | GET  | `/fit`       | Get some predefined fit value                          | `mice::getfit(with())`        |
+  | GET  | `/pool`       | Pool results of a fit given its summary table            | `mice::pool()`    
+  |
+The table lists the defined API end points and the internal mapping between the API end point and the corresponding R function. 
+
+### Objective
+
+This document provides a quick introduction into the main WEBMICE features, and how these can be assessed from `R` and from the bash command line.
+
+
+## Features 
+
+### {.tabset}
+
+#### **R**
+
+##### **`/version`**: Obtain version information
+
+Let us first check whether WEBMICE is running. The following code makes a simple request to WEBMICE to see whether it is alive and to return the version number of the underlying `mice` R package. We illustrate both requests in `R` and in `bash`.
+
+We first need to install and load packages.
+
+```{r httr, eval=FALSE}
+install.packages(c("httr2", "jsonlite"))
+```
+```{r load}
+library(httr2)
+library(jsonlite)
+```
+
+Let's find out the WEBMICE version number. In this document, we define the server that hosts WEBMICE as follows, and optionally create a variable `.host` for use in the bash terminal.
+
+```{r host}
+host <- "http://localhost:8080"
+```
+
+We first illustrate a method that makes a request to the server. The following command prepares a GET request `req` to the `/version` end point:
+
+```{r req_version}
+req <- request(host) |> 
+  req_headers(accept = "text/plain") |> 
+  req_url_path("/version")
+req
+```
+
+The next step sends the request to the API server, and stores the result in the server response `resp`:
+
+```{r call_version}
+resp <- req_perform(req)
+resp
+```
+
+The next step parses the `resp` object and converts the body into an R list:
+
+```{r ret_version}
+ret <- resp |> 
+  resp_body_string() |> 
+  fromJSON()
+ret
+```
+
+See the documentation of the `httr2` package for other operations and extractions. One may chain the above operations as:
+
+```{r}
+request(host) |> 
+  req_headers(accept = "text/plain") |> 
+  req_url_path("/version") |> 
+  req_perform() |> 
+  resp_body_string() |> 
+  fromJSON()
+```
+
+##### **`/long`**: Impute built-in dataset
+
+Raw call
+
+```{r}
+resp <- request("http://localhost:8080/long?payload=%7B%22data%22%3A%22nhanes%22%2C%22maxit%22%3A2%2C%22m%22%3A2%2C%22seed%22%3A1%7D") %>% 
+  req_method("GET") %>% 
+  req_headers(accept = "text/json") %>% 
+  req_perform()
+ret <- resp |> 
+  resp_body_string() |> 
+  fromJSON()
+head(ret$result)
+```
+
+A more user-friendly call
+```{r, eval=TRUE}
+
+req_long <- request(host) |> 
+  req_headers(accept = "text/json") |> 
+  req_url_path("/long") |> 
+  req_url_query(payload = '{"data":"nhanes","maxit":2,"m":1,"seed":1}')
+req_long |> req_dry_run()
+resp_long <- req_perform(req_long)
+ret_long <- resp_long |> 
+  resp_body_string() |> 
+  fromJSON()
+head(ret_long$result)
+
+```
+
+##### **`/fit`**: Some predifined fits
+
+Raw call (all result from `/long` as input for `/fit`)
+
+```{r}
+resp1 <- request("http://localhost:8080/fit?payload=%7B%22data%22%3A%20%5B%7B%22...1%22%3A1%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A1%7D%2C%7B%22...1%22%3A2%2C%22age%22%3A2%2C%22bmi%22%3A22.7%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A0%2C%22.id%22%3A2%7D%2C%7B%22...1%22%3A3%2C%22age%22%3A1%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A0%2C%22.id%22%3A3%7D%2C%7B%22...1%22%3A4%2C%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A4%7D%2C%7B%22...1%22%3A5%2C%22age%22%3A1%2C%22bmi%22%3A20.4%2C%22hyp%22%3A1%2C%22chl%22%3A113%2C%22.imp%22%3A0%2C%22.id%22%3A5%7D%2C%7B%22...1%22%3A6%2C%22age%22%3A3%2C%22chl%22%3A184%2C%22.imp%22%3A0%2C%22.id%22%3A6%7D%2C%7B%22...1%22%3A7%2C%22age%22%3A1%2C%22bmi%22%3A22.5%2C%22hyp%22%3A1%2C%22chl%22%3A118%2C%22.imp%22%3A0%2C%22.id%22%3A7%7D%2C%7B%22...1%22%3A8%2C%22age%22%3A1%2C%22bmi%22%3A30.1%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A0%2C%22.id%22%3A8%7D%2C%7B%22...1%22%3A9%2C%22age%22%3A2%2C%22bmi%22%3A22%2C%22hyp%22%3A1%2C%22chl%22%3A238%2C%22.imp%22%3A0%2C%22.id%22%3A9%7D%2C%7B%22...1%22%3A10%2C%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A10%7D%2C%7B%22...1%22%3A11%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A11%7D%2C%7B%22...1%22%3A12%2C%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A12%7D%2C%7B%22...1%22%3A13%2C%22age%22%3A3%2C%22bmi%22%3A21.7%2C%22hyp%22%3A1%2C%22chl%22%3A206%2C%22.imp%22%3A0%2C%22.id%22%3A13%7D%2C%7B%22...1%22%3A14%2C%22age%22%3A2%2C%22bmi%22%3A28.7%2C%22hyp%22%3A2%2C%22chl%22%3A204%2C%22.imp%22%3A0%2C%22.id%22%3A14%7D%2C%7B%22...1%22%3A15%2C%22age%22%3A1%2C%22bmi%22%3A29.6%2C%22hyp%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A15%7D%2C%7B%22...1%22%3A16%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A16%7D%2C%7B%22...1%22%3A17%2C%22age%22%3A3%2C%22bmi%22%3A27.2%2C%22hyp%22%3A2%2C%22chl%22%3A284%2C%22.imp%22%3A0%2C%22.id%22%3A17%7D%2C%7B%22...1%22%3A18%2C%22age%22%3A2%2C%22bmi%22%3A26.3%2C%22hyp%22%3A2%2C%22chl%22%3A199%2C%22.imp%22%3A0%2C%22.id%22%3A18%7D%2C%7B%22...1%22%3A19%2C%22age%22%3A1%2C%22bmi%22%3A35.3%2C%22hyp%22%3A1%2C%22chl%22%3A218%2C%22.imp%22%3A0%2C%22.id%22%3A19%7D%2C%7B%22...1%22%3A20%2C%22age%22%3A3%2C%22bmi%22%3A25.5%2C%22hyp%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A20%7D%2C%7B%22...1%22%3A21%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A21%7D%2C%7B%22...1%22%3A22%2C%22age%22%3A1%2C%22bmi%22%3A33.2%2C%22hyp%22%3A1%2C%22chl%22%3A229%2C%22.imp%22%3A0%2C%22.id%22%3A22%7D%2C%7B%22...1%22%3A23%2C%22age%22%3A1%2C%22bmi%22%3A27.5%2C%22hyp%22%3A1%2C%22chl%22%3A131%2C%22.imp%22%3A0%2C%22.id%22%3A23%7D%2C%7B%22...1%22%3A24%2C%22age%22%3A3%2C%22bmi%22%3A24.9%2C%22hyp%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A24%7D%2C%7B%22...1%22%3A25%2C%22age%22%3A2%2C%22bmi%22%3A27.4%2C%22hyp%22%3A1%2C%22chl%22%3A186%2C%22.imp%22%3A0%2C%22.id%22%3A25%7D%2C%7B%22...1%22%3A1%2C%22age%22%3A1%2C%22bmi%22%3A27.4%2C%22hyp%22%3A1%2C%22chl%22%3A186%2C%22.imp%22%3A1%2C%22.id%22%3A1%7D%2C%7B%22...1%22%3A2%2C%22age%22%3A2%2C%22bmi%22%3A22.7%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A1%2C%22.id%22%3A2%7D%2C%7B%22...1%22%3A3%2C%22age%22%3A1%2C%22bmi%22%3A27.2%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A1%2C%22.id%22%3A3%7D%2C%7B%22...1%22%3A4%2C%22age%22%3A3%2C%22bmi%22%3A28.7%2C%22hyp%22%3A1%2C%22chl%22%3A206%2C%22.imp%22%3A1%2C%22.id%22%3A4%7D%2C%7B%22...1%22%3A5%2C%22age%22%3A1%2C%22bmi%22%3A20.4%2C%22hyp%22%3A1%2C%22chl%22%3A113%2C%22.imp%22%3A1%2C%22.id%22%3A5%7D%2C%7B%22...1%22%3A6%2C%22age%22%3A3%2C%22bmi%22%3A22.7%2C%22hyp%22%3A1%2C%22chl%22%3A184%2C%22.imp%22%3A1%2C%22.id%22%3A6%7D%2C%7B%22...1%22%3A7%2C%22age%22%3A1%2C%22bmi%22%3A22.5%2C%22hyp%22%3A1%2C%22chl%22%3A118%2C%22.imp%22%3A1%2C%22.id%22%3A7%7D%2C%7B%22...1%22%3A8%2C%22age%22%3A1%2C%22bmi%22%3A30.1%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A1%2C%22.id%22%3A8%7D%2C%7B%22...1%22%3A9%2C%22age%22%3A2%2C%22bmi%22%3A22%2C%22hyp%22%3A1%2C%22chl%22%3A238%2C%22.imp%22%3A1%2C%22.id%22%3A9%7D%2C%7B%22...1%22%3A10%2C%22age%22%3A2%2C%22bmi%22%3A26.3%2C%22hyp%22%3A1%2C%22chl%22%3A186%2C%22.imp%22%3A1%2C%22.id%22%3A10%7D%2C%7B%22...1%22%3A11%2C%22age%22%3A1%2C%22bmi%22%3A27.5%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A1%2C%22.id%22%3A11%7D%2C%7B%22...1%22%3A12%2C%22age%22%3A2%2C%22bmi%22%3A24.9%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A1%2C%22.id%22%3A12%7D%2C%7B%22...1%22%3A13%2C%22age%22%3A3%2C%22bmi%22%3A21.7%2C%22hyp%22%3A1%2C%22chl%22%3A206%2C%22.imp%22%3A1%2C%22.id%22%3A13%7D%2C%7B%22...1%22%3A14%2C%22age%22%3A2%2C%22bmi%22%3A28.7%2C%22hyp%22%3A2%2C%22chl%22%3A204%2C%22.imp%22%3A1%2C%22.id%22%3A14%7D%2C%7B%22...1%22%3A15%2C%22age%22%3A1%2C%22bmi%22%3A29.6%2C%22hyp%22%3A1%2C%22chl%22%3A238%2C%22.imp%22%3A1%2C%22.id%22%3A15%7D%2C%7B%22...1%22%3A16%2C%22age%22%3A1%2C%22bmi%22%3A29.6%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A1%2C%22.id%22%3A16%7D%2C%7B%22...1%22%3A17%2C%22age%22%3A3%2C%22bmi%22%3A27.2%2C%22hyp%22%3A2%2C%22chl%22%3A284%2C%22.imp%22%3A1%2C%22.id%22%3A17%7D%2C%7B%22...1%22%3A18%2C%22age%22%3A2%2C%22bmi%22%3A26.3%2C%22hyp%22%3A2%2C%22chl%22%3A199%2C%22.imp%22%3A1%2C%22.id%22%3A18%7D%2C%7B%22...1%22%3A19%2C%22age%22%3A1%2C%22bmi%22%3A35.3%2C%22hyp%22%3A1%2C%22chl%22%3A218%2C%22.imp%22%3A1%2C%22.id%22%3A19%7D%2C%7B%22...1%22%3A20%2C%22age%22%3A3%2C%22bmi%22%3A25.5%2C%22hyp%22%3A2%2C%22chl%22%3A199%2C%22.imp%22%3A1%2C%22.id%22%3A20%7D%2C%7B%22...1%22%3A21%2C%22age%22%3A1%2C%22bmi%22%3A27.5%2C%22hyp%22%3A1%2C%22chl%22%3A131%2C%22.imp%22%3A1%2C%22.id%22%3A21%7D%2C%7B%22...1%22%3A22%2C%22age%22%3A1%2C%22bmi%22%3A33.2%2C%22hyp%22%3A1%2C%22chl%22%3A229%2C%22.imp%22%3A1%2C%22.id%22%3A22%7D%2C%7B%22...1%22%3A23%2C%22age%22%3A1%2C%22bmi%22%3A27.5%2C%22hyp%22%3A1%2C%22chl%22%3A131%2C%22.imp%22%3A1%2C%22.id%22%3A23%7D%2C%7B%22...1%22%3A24%2C%22age%22%3A3%2C%22bmi%22%3A24.9%2C%22hyp%22%3A1%2C%22chl%22%3A186%2C%22.imp%22%3A1%2C%22.id%22%3A24%7D%2C%7B%22...1%22%3A25%2C%22age%22%3A2%2C%22bmi%22%3A27.4%2C%22hyp%22%3A1%2C%22chl%22%3A186%2C%22.imp%22%3A1%2C%22.id%22%3A25%7D%2C%7B%22...1%22%3A1%2C%22age%22%3A1%2C%22bmi%22%3A22.5%2C%22hyp%22%3A1%2C%22chl%22%3A118%2C%22.imp%22%3A2%2C%22.id%22%3A1%7D%2C%7B%22...1%22%3A2%2C%22age%22%3A2%2C%22bmi%22%3A22.7%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A2%2C%22.id%22%3A2%7D%2C%7B%22...1%22%3A3%2C%22age%22%3A1%2C%22bmi%22%3A22%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A2%2C%22.id%22%3A3%7D%2C%7B%22...1%22%3A4%2C%22age%22%3A3%2C%22bmi%22%3A24.9%2C%22hyp%22%3A1%2C%22chl%22%3A218%2C%22.imp%22%3A2%2C%22.id%22%3A4%7D%2C%7B%22...1%22%3A5%2C%22age%22%3A1%2C%22bmi%22%3A20.4%2C%22hyp%22%3A1%2C%22chl%22%3A113%2C%22.imp%22%3A2%2C%22.id%22%3A5%7D%2C%7B%22...1%22%3A6%2C%22age%22%3A3%2C%22bmi%22%3A20.4%2C%22hyp%22%3A2%2C%22chl%22%3A184%2C%22.imp%22%3A2%2C%22.id%22%3A6%7D%2C%7B%22...1%22%3A7%2C%22age%22%3A1%2C%22bmi%22%3A22.5%2C%22hyp%22%3A1%2C%22chl%22%3A118%2C%22.imp%22%3A2%2C%22.id%22%3A7%7D%2C%7B%22...1%22%3A8%2C%22age%22%3A1%2C%22bmi%22%3A30.1%2C%22hyp%22%3A1%2C%22chl%22%3A187%2C%22.imp%22%3A2%2C%22.id%22%3A8%7D%2C%7B%22...1%22%3A9%2C%22age%22%3A2%2C%22bmi%22%3A22%2C%22hyp%22%3A1%2C%22chl%22%3A238%2C%22.imp%22%3A2%2C%22.id%22%3A9%7D%2C%7B%22...1%22%3A10%2C%22age%22%3A2%2C%22bmi%22%3A24.9%2C%22hyp%22%3A1%2C%22chl%22%3A204%2C%22.imp%22%3A2%2C%22.id%22%3A10%7D%2C%7B%22...1%22%3A11%2C%22age%22%3A1%2C%22bmi%22%3A28.7%2C%22hyp%22%3A1%2C%22chl%22%3A229%2C%22.imp%22%3A2%2C%22.id%22%3A11%7D%2C%7B%22...1%22%3A12%2C%22age%22%3A2%2C%22bmi%22%3A22.7%2C%22hyp%22%3A1%2C%22chl%22%3A199%2C%22.imp%22%3A2%2C%22.id%22%3A12%7D%2C%7B%22...1%22%3A13%2C%22age%22%3A3%2C%22bmi%22%3A21.7%2C%22hyp%22%3A1%2C%22chl%22%3A206%2C%22.imp%22%3A2%2C%22.id%22%3A13%7D%2C%7B%22...1%22%3A14%2C%22age%22%3A2%2C%22bmi%22%3A28.7%2C%22hyp%22%3A2%2C%22chl%22%3A204%2C%22.imp%22%3A2%2C%22.id%22%3A14%7D%2C%7B%22...1%22%3A15%2C%22age%22%3A1%2C%22bmi%22%3A29.6%2C%22hyp%22%3A1%2C%22chl%22%3A238%2C%22.imp%22%3A2%2C%22.id%22%3A15%7D%2C%7B%22...1%22%3A16%2C%22age%22%3A1%2C%22bmi%22%3A30.1%2C%22hyp%22%3A1%2C%22chl%22%3A229%2C%22.imp%22%3A2%2C%22.id%22%3A16%7D%2C%7B%22...1%22%3A17%2C%22age%22%3A3%2C%22bmi%22%3A27.2%2C%22hyp%22%3A2%2C%22chl%22%3A284%2C%22.imp%22%3A2%2C%22.id%22%3A17%7D%2C%7B%22...1%22%3A18%2C%22age%22%3A2%2C%22bmi%22%3A26.3%2C%22hyp%22%3A2%2C%22chl%22%3A199%2C%22.imp%22%3A2%2C%22.id%22%3A18%7D%2C%7B%22...1%22%3A19%2C%22age%22%3A1%2C%22bmi%22%3A35.3%2C%22hyp%22%3A1%2C%22chl%22%3A218%2C%22.imp%22%3A2%2C%22.id%22%3A19%7D%2C%7B%22...1%22%3A20%2C%22age%22%3A3%2C%22bmi%22%3A25.5%2C%22hyp%22%3A2%2C%22chl%22%3A186%2C%22.imp%22%3A2%2C%22.id%22%3A20%7D%2C%7B%22...1%22%3A21%2C%22age%22%3A1%2C%22bmi%22%3A26.3%2C%22hyp%22%3A1%2C%22chl%22%3A118%2C%22.imp%22%3A2%2C%22.id%22%3A21%7D%2C%7B%22...1%22%3A22%2C%22age%22%3A1%2C%22bmi%22%3A33.2%2C%22hyp%22%3A1%2C%22chl%22%3A229%2C%22.imp%22%3A2%2C%22.id%22%3A22%7D%2C%7B%22...1%22%3A23%2C%22age%22%3A1%2C%22bmi%22%3A27.5%2C%22hyp%22%3A1%2C%22chl%22%3A131%2C%22.imp%22%3A2%2C%22.id%22%3A23%7D%2C%7B%22...1%22%3A24%2C%22age%22%3A3%2C%22bmi%22%3A24.9%2C%22hyp%22%3A1%2C%22chl%22%3A206%2C%22.imp%22%3A2%2C%22.id%22%3A24%7D%2C%7B%22...1%22%3A25%2C%22age%22%3A2%2C%22bmi%22%3A27.4%2C%22hyp%22%3A1%2C%22chl%22%3A186%2C%22.imp%22%3A2%2C%22.id%22%3A25%7D%5D%2C%20%22model%22%3A%5B%22lm%22%5D%2C%20%22formula%22%3A%5B%22chl%20~%20age%20%2B%20bmi%22%5D%7D") %>% 
+  req_method("GET") %>% 
+  req_headers(accept = "text/json") %>% 
+  req_perform()
+ret1 <- resp1 |> 
+  resp_body_string() |> 
+  fromJSON()
+head(ret1$result)
+```
+
+A more user-friendly call (data comes from `complete(..., action = 'long', include = TRUE)`)
+
+```{r, eval=TRUE}
+body_long <- (toJSON(ret_long$result))
+
+req_fit <- request(host) |> 
+  req_headers("accept" = "text/json") |>
+  req_url_path("/fit") |> 
+  req_url_query(payload = '{"data":', body_long,', "model":["lm"], "formula":["chl ~ age + bmi"]}') 
+req_dry_run(req_fit)
+resp_fit <- req |> req_perform()
+ret_fit <- resp |> 
+  resp_body_string() |> 
+  fromJSON()
+ret_fit$result
+```
+
+
+##### **`/pool`**: Pool results of a fit given its summary table (mice 3.14.4 or higher)
+```{r}
+resp2 <- request("http://localhost:8080/pool?payload=%7B%22data%22%3A%20%5B%7B%22term%22%3A%22%28Intercept%29%22%2C%22estimate%22%3A23.9357%2C%22std.error%22%3A3.8732%2C%20%22statistic%22%3A6.1798%2C%22p.value%22%3A3.2106e-06%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%20%7B%22term%22%3A%22hyp%22%2C%22estimate%22%3A1.1677%2C%22std.error%22%3A1.6218%2C%22statistic%22%3A0.72%2C%20%22p.value%22%3A0.4791%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%7B%22term%22%3A%22chl%22%2C%22estimate%22%3A0.0063%2C%20%22std.error%22%3A0.0185%2C%22statistic%22%3A0.3385%2C%22p.value%22%3A0.7382%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%20%7B%22term%22%3A%22%28Intercept%29%22%2C%22estimate%22%3A24.5434%2C%22std.error%22%3A4.7611%2C%22statistic%22%3A5.155%2C%20%22p.value%22%3A0%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%7B%22term%22%3A%22hyp%22%2C%22estimate%22%3A1.5843%2C%20%22std.error%22%3A2.236%2C%22statistic%22%3A0.7086%2C%22p.value%22%3A0.486%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%20%7B%22term%22%3A%22chl%22%2C%22estimate%22%3A-0.0032%2C%22std.error%22%3A0.0205%2C%22statistic%22%3A-0.1569%2C%20%22p.value%22%3A0.8768%2C%22nobs%22%3A25%2C%22df.residual%22%3A25%7D%5D%7D") %>% 
+  req_method("GET") %>% 
+  req_headers(accept = "text/json") %>% 
+  req_perform()
+ret2 <- resp2 |> 
+  resp_body_string() |> 
+  fromJSON()
+head(ret2$result)
+
+```
+
+A more user-friendly call
+
+```{r, eval=TRUE}
+
+body_fit<- as.character(toJSON(ret_fit$result))
+
+req_pool <- request(host) |> 
+  req_headers("accept" = "text/json") |>
+  req_url_path("/pool") |> 
+  req_url_query(payload = '{"data":', body_fit,',}') 
+req_dry_run(req_pool)
+resp_pool <- req |> req_perform()
+ret_pool <- resp |> 
+  resp_body_string() |> 
+  fromJSON()
+ret_pool$result
+```
+
+
+##### **`/data`**: Upload data
+
+Uploading data to WEBMICE can be done by sending a text file. Suppose that `../testdata/tempdata.csv` is a comma-delimited file with data. We may upload it as
+
+```{r upload_r, eval = TRUE}
+input <- curl::form_file("C:/Users/Zenius/Documents/GitHub/webmice/testdata/nhanes2.tsv", type = "text/csv")
+#input <- curl::form_file("testdata/tempdata.csv", type = "text/csv")
+resp <- request(host) |> 
+  req_url_path("/data") |> 
+  req_headers("accept" = "text/plain", 
+              "content-type" = "multipart/form-data") |>
+  req_body_multipart(csvfile = input) |> 
+  req_perform()
+resp_header(resp, "data_token")
+```
+
+The file is uploaded to the server. The `data_token` header may be used for subsequent requests to refer to the uploaded data.
+
+##### **`/long`**: Impute data using the token (not yet working)
+
+```{r impute_r, eval=TRUE}
+token <- resp_header(resp, "data_token")
+token_with_quotes <- paste0('"', token, '"')
+print(token_with_quotes)
+
+req <- request(host) |> 
+  req_url_path("/long") |> 
+  req_url_query(payload = paste0('{"data":', token_with_quotes,  ',"maxit":2,"m":1,"seed":1}')) |> 
+  req_headers("accept" = "text/json")
+req_dry_run(req)
+resp <- req |> req_perform()
+ret <- resp |> 
+  resp_body_string() |> 
+  fromJSON()
+ret
+```
+
+##### **`/fit`**: Some predifined fits
+
+```{r, eval=TRUE}
+body_long <- as.character(toJSON(ret_long$result))
+
+req_fit <- request(host) |> 
+  req_headers("accept" = "text/json") |>
+  req_url_path("/fit") |> 
+  req_url_query(payload = paste0('{"data":', body_long,', "model":["lm"], "formula":["chl ~ age + bmi"]}'))
+req_dry_run(req_fit)
+resp_fit <- req_fit |> req_perform()
+ret_fit <- resp_fit |> 
+  resp_body_string() |> 
+  fromJSON()
+ret_fit$result
+
+```
+
+##### **`/pool`**: Pool results of a fit given its summary table (mice 3.14.4 or higher)
+
+```{r, eval=TRUE}
+
+body_fit<- as.character(toJSON(ret_fit$result))
+
+req_pool <- request(host) |> 
+  req_headers("accept" = "text/json") |>
+  req_url_path("/pool") |> 
+  req_url_query(payload = paste0('{"data":',body_fit,'}') )
+req_dry_run(req_pool)
+resp_pool <- req_pool |> req_perform()
+ret_pool <- resp_pool |> 
+  resp_body_string() |> 
+  fromJSON()
+ret_pool$result
+```
+
+
+#### **bash**
+
+##### **`/version`**: Obtain version information
+
+We use the `curl` Linux command. If needed, on Ubuntu install `curl` as
+
+```{bash, eval=FALSE}
+sudo apt update
+sudo apt -y install curl
+```
+
+Let’s find out the WEBMICE version number. We first illustrate a method that makes two requests to the server.
+
+The following `bash` commands call the `/version` API end point with a GET request, and stores the response in file `resp`:
+
+```{bash get_version}
+echo http://localhost:8080 > .host
+curl -X 'GET' \
+  $(cat .host)/version \
+  -H 'accept: text/plain' \
+  > resp
+```
+
+The response to the request consists of a set of URLs created on the server, each of which contains details on the response. 
+
+```{bash}
+cat resp
+```
+
+##### **exampledata**: Get example data
+
+The R package `mice` contains a few built-in datasets (See <https://amices.org/mice/reference/index.html#datasets>). These datasets can be imputed and analysed directly on the server. To download the JSON representation of the `mice::boys` data and store it in file `boys.json` use
+
+```{bash exampledata_bash}
+curl -X 'GET' \
+    $(cat .host)/exampledata?name=boys \
+    -H 'accept: text/json' \
+    > boys.json
+```
+
+##### **`/data`**: Upload data
+
+Uploading data to WEBMICE can be done by sending a text file. Suppose that `../testdata/tempdata.csv` is a comma-delimited file with data. We may upload it as
+
+```{bash upload_bash, eval = TRUE}
+curl -X 'POST' \
+  $(cat .host)/data \
+  -H 'accept: text/plain' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'csvfile=@../testdata/tempdata.csv;type=text/csv' \
+  -v > /dev/null
+```
+
+The file is uploaded to the server. The `data_token` header may be used for subsequent requests to refer to the uploaded data.
+
+##### **`/long`**: Impute built-in dataset
+
+Raw call
+
+```{bash}
+curl -X 'GET' \
+  'http://localhost:8080/long?payload=%7B%22data%22%3A%22boys%22%2C%22maxit%22%3A2%2C%22m%22%3A2%2C%22seed%22%3A1%7D' \
+  -H 'accept: text/json' > boys_imputed_1.json
+```
+
+A more user-friendly call (does not work)
+
+```{bash, eval=FALSE}
+curl -X 'GET' \
+  $(cat .host)/long?payload='{"data":"nhanes","maxit":2,"m":1,"seed":1}' \
+  -H 'accept: text/json' > boys_imputed_2.json
+```
+
+#### **Python**
+
+```{python}
+import requests
+from urllib.parse import urljoin
+import urllib.parse
+import json
+import re
+
+# Specify the url for host
+host = 'http://localhost:8080'
+```
+
+##### **`/version`**: Obtain version information
+
+```{python}
+## /version
+
+# Add path
+path_version = '/version'
+
+# Combine the url
+version = urljoin(host,path_version)
+
+# Add headers
+headers = {'Accept': 'application/json'}
+
+# Get the url
+response_version = requests.get(version, headers=headers)
+
+# See the response
+response_version.content
+```
+
+##### **`/long`**: Impute built-in dataset
+```{python}
+## /long
+
+# Add path
+path_long = '/long'
+
+# Combine the url
+long = urljoin(host,path_long)
+
+# Add headers
+headers = {'Accept': 'application/json'}
+
+# Add payload
+params = {'data':'nhanes','maxit':2,'m':1,'seed':1}
+
+# Encode the payload as a JSON string and then URL-encode the entire payload
+payload = urllib.parse.quote('{"data":"%s","maxit":%d,"m":%d,"seed":%d}' % (params['data'], params['maxit'], params['m'], params['seed']))
+
+# Construct the complete URL
+long_url = f"{long}?payload={payload}"
+
+# Make a request using the complete URL
+response = requests.get(long_url)
+
+# Get the response body
+response.json()
+json_response = response.json()
+
+# Access the "result" part
+result_part = json_response.get("result", [])
+result_part
+
+```
+
+##### **`/fit`**: Some predifined fits
+``` {python}
+## /fit
+
+# Add path
+path_fit = '/fit'
+
+# Combine the url
+fit = urljoin(host,path_fit)
+
+# Add headers
+headers = {'Accept': 'application/json'}
+
+# Add payload
+params_fit = {
+    "data": result_part,
+    "model": ["lm"],
+    "formula": ["chl ~ age + bmi"]
+}
+# Encode the payload as a JSON string and then URL-encode the entire payload
+payload_fit = json.dumps(params_fit)
+url_encoded_payload_fit = urllib.parse.quote(payload_fit)
+
+# Construct the complete URL
+fit_url = f"{fit}?payload={url_encoded_payload_fit}"
+
+# Make a request using the complete URL
+response_fit = requests.get(fit_url)
+
+# Get the response body
+json_response_fit = response_fit.json()
+
+# Access the "result" part
+result_fit = json_response_fit.get("result", [])
+result_fit
+```
+
+##### **`/pool`**: Pool results of a fit given its summary table (mice 3.14.4 or higher)
+```{python}
+## /pool
+
+# Add path
+path_pool = '/pool'
+
+# Combine the url
+pool = urljoin(host,path_pool)
+
+# Add headers
+headers = {'Accept': 'application/json'}
+
+# Add payload
+params_pool = {"data": result_fit}
+
+# Encode the payload as a JSON string and then URL-encode the entire payload
+payload_pool = json.dumps(params_pool)
+url_encoded_payload_pool = urllib.parse.quote(payload_pool)
+
+# Construct the complete URL
+pool_url = f"{pool}?payload={url_encoded_payload_pool}"
+
+# Make a request using the complete URL
+response_pool = requests.get(pool_url)
+
+# Get the response body
+json_response_pool = response_pool.json()
+
+# Access the "result" part
+result_pool = json_response_pool.get("result", [])
+result_pool
+```
+
+##### **`/data`**: Upload data (do not get the data_token)
+
+Uploading data to WEBMICE can be done by sending a text file. Suppose that `../testdata/tempdata.csv` is a comma-delimited file with data. We may upload it as
+```{python}
+header = {'Accept': 'application/plain'}
+
+# Use double backslashes or raw string literal for file paths
+file_path = r"C:\Users\Zenius\Documents\GitHub\webmice\testdata\tempdata.csv"
+
+# Construct the files dictionary
+files = {'tempdata.csv': (file_path, open(file_path, 'rb'))}
+
+url = "http://localhost:8080"
+response = requests.post(url + '/data', files=files, verify=False, headers=header)
+
+# Print all headers
+for key, value in response.headers.items():
+    print(f"{key}: {value}")
+
+# Retrieve the data_token from headers
+data_token = response.headers.get('data_token')
+print(f"Data Token: {data_token}")
+```
+
+### {-}
+
+## Resources
+
+### Internal
+
+| Description                                           | Status                                  |
+|:------------------------------------------------------|:----------------------------------------|
+
+### External
+  
+| Description                                           | Status                                  |
+|:------------------------------------------------------|:----------------------------------------|
