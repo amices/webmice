@@ -1,11 +1,11 @@
-# *webmice*: Experimental REST API
+# `webmice`: Experimental REST API for Multivariate Imputation by Chained Equations
 
 <a title="Five by Five, CC0, via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:API_-_The_Noun_Project.svg"><img width="110" alt="API - The Noun Project" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/API_-_The_Noun_Project.svg/512px-API_-_The_Noun_Project.svg.png"></a> 
 <a href="https://amices.org/mice/"><img src="https://github.com/amices/mice/blob/master/man/figures/logo.png?raw=true" width="100" /></a> 
 
 ## Summary
 
-We provide a very easy example of a REST API for the R package *mice*. The HTTP server is run locally on http://localhost:8080/ and also runs a Swagger API endpoint on http://localhost:8080/doc.
+We provide a very easy example of a REST API for the R package `mice`. The HTTP server is run locally on http://localhost:8080/ and also runs a Swagger API endpoint on http://localhost:8080/doc.
 
 ## Start the REST API
 ### Docker
@@ -31,7 +31,11 @@ Start the app:
 ```sh
 Rscript webmice.R
 ```
+
 Navigate to your browser http://localhost:8080/doc
 
+## Acknowledgements
 
+This project was supported by Utrecht University's [Open Science Fund](https://www.uu.nl/en/research/open-science/about-us/open-science-fund).
 
+<a href="https://www.uu.nl/en"><img src="https://www.uu.nl/themes/custom/corp/src/images/uu-logo-en.svg" width="100" /></a> 
