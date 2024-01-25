@@ -1,5 +1,8 @@
 # *webmice*: Experimental REST API
 
+<a title="Five by Five, CC0, via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:API_-_The_Noun_Project.svg"><img width="110" alt="API - The Noun Project" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/API_-_The_Noun_Project.svg/512px-API_-_The_Noun_Project.svg.png"></a> 
+<a href="https://amices.org/mice/"><img src="https://github.com/amices/mice/blob/master/man/figures/logo.png?raw=true" width="100" /></a> 
+
 ## Summary
 
 We provide a very easy example of a REST API for the R package *mice*. The HTTP server is run locally on http://localhost:8080/ and also runs a Swagger API endpoint on http://localhost:8080/doc.
