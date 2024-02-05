@@ -303,7 +303,7 @@ call_pool <- function(data) {
 }
 
 get_data_uploads <- function() {
-  data_uploads <- Sys.getenv("MICEROCKER_DATA_UPLOADS")
+  data_uploads <- file.path(Sys.getenv("WEBMICE_LOC"), "data_uploads")
   if (data_uploads == "") {
     data_uploads <- "data_uploads"
   }

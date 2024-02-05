@@ -66,7 +66,7 @@ sanitize_data <- function(param_data) {
         "Failure: reading file, not an example dataset or file on server"
     } else {
       check <- check_factors(df)
-      if (check == "") {
+      if (is.null(check)) {
         return_list$df <- df
       } else {
         return_list$error <- check
