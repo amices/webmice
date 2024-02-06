@@ -1,0 +1,1 @@
+{"result":[{"term":"(Intercept)","m":1,"estimate":18.6899,"ubar":4601.126,"dfcom":22},{"term":"age","m":1,"estimate":32.13,"ubar":108.4993,"dfcom":22},{"term":"bmi","m":1,"estimate":4.6225,"ubar":4.4868,"dfcom":22}],"error":[""],"success":[true]}
