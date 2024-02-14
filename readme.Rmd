@@ -601,7 +601,7 @@ The following `bash` commands call the `/version` API end point with a GET reque
 
 The response to the request consists of a set of URLs created on the server, each of which contains details on the response. 
 
-```{bash}
+```{bash, eval = FALSE}
 echo http://localhost:8080 > .host
 
 curl \
@@ -615,7 +615,7 @@ cat resp
 ##### **`/exampledata`**: Obtain example data
 The R package `mice` contains a few built-in datasets (See <https://amices.org/mice/reference/index.html#datasets>). These datasets can be imputed and analysed directly on the server. This is to get example data of `nhanes`
 
-```{bash}
+```{bash, eval = FALSE}
 curl \
   -X GET "$(cat .host)/exampledata?name=nhanes" \
   -H "accept: text/json" \
@@ -632,7 +632,7 @@ Suppose that `../testdata/tempdata.csv` is a comma-delimited file with data. We 
 
 From this part, we can obtain data_token from the uploaded csv file
 
-```{bash}
+```{bash, eval = FALSE}
 curl -i \
   -X POST "$(cat .host)/data" \
   -H "accept: text/plain" \
@@ -651,7 +651,7 @@ The file is uploaded to the server. The `data_token` header may be used for subs
 ##### **`/long`**: Obtain version information
 
 Get the long data for `nhanes` data
-```{bash}
+```{bash, eval = FALSE}
 curl -G "$(cat .host)/long" \
   -H "accept: application/json" \
   --data-urlencode  'payload={"data":"nhanes","maxit":2,"m":1,"seed":1}' \
@@ -661,7 +661,7 @@ cat outputlong.json
 ```
 
 Get the long data for uploaded data using the data_token
-```{bash}
+```{bash, eval = FALSE}
 curl -G -v "$(cat .host)/long" \
   -H "accept: application/json" \
   --data-urlencode 'payload={"data":"'$data_token'","maxit":2,"m":1,"seed":1}' \
@@ -672,7 +672,7 @@ cat longdata.json
 
 
 ##### **`/fit`**: Obtain version information
-```{bash}
+```{bash, eval = FALSE}
 # Extract the result from JSON and remove spaces
 result_long=$(jq -r '.result' outputlong.json | tr -d '[:space:]')
 
@@ -692,7 +692,7 @@ curl -G -v "$(cat .host)/fit" \
 
 ##### **`/pool`**: Obtain version information
 
-```{bash}
+```{bash, eval = FALSE}
 # Extract the result from JSON and remove spaces
 result_fit=$(jq -r '.result' outputfit.json | tr -d '[:space:]')
 
