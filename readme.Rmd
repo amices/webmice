@@ -329,7 +329,7 @@ params = {'name': 'nhanes'}
 headers = {'Accept': 'application/json'}
 
 # Make the GET request
-response = requests.get(url + endpoint, params=params, headers=headers)
+response = requests.get(host + endpoint, params=params, headers=headers)
 
 # Print the response
 print(response.text)
