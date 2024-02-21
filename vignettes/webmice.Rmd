@@ -1,16 +1,9 @@
 ---
-title: WEBMICE - 
-subtitle: webmice 0.0.1 (December 2023)
-author: 
-output:
-  html_document:
-  number_sections: false
-  self-contained: true
-theme: united
-editor_options: 
-  chunk_output_type: console
+title: "Get started"
+output: html_document
+date: "`r Sys.Date()`"
 ---
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+
   
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
