@@ -24,8 +24,7 @@ WEBMICE is a RESTful API that runs on a (remote) host. In principle, any `HTTP` 
   | POST  | `/data`       | Upload an incomplete data in CSV format                          |          |
   | GET  | `/long`       | Impute missing data            | `mice::mice()`    |
   | GET  | `/fit`       | Get some predefined fit value                          | `mice::getfit(with())`        |
-  | GET  | `/pool`       | Pool results of a fit given its summary table            | `mice::pool()`    
-  |
+  | GET  | `/pool`       | Pool results of a fit given its summary table            | `mice::pool()`     |
 The table lists the defined API end points and the internal mapping between the API end point and the corresponding R function. 
 
 ### Objective
