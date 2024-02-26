@@ -61,5 +61,6 @@ Change `</path/to/local/datafolder>`to your local path. You only need the `-v </
   | GET  | `/fit`       | Get some predefined fit value                          | `mice::getfit(with())`        |
   | GET  | `/pool`       | Pool results of a fit given its summary table            | `mice::pool()`    
   |
+
 4. If you want to upload your own data, you can upload your dataset in Swagger API. The variables must be less than 50 variables (number of columns) and in CSV format.
 
