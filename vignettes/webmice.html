@@ -9,10 +9,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content />
 
+<meta name="date" content="2024-03-08" />
 
-<title>WEBMICE - Installation</title>
+<title>Get started</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -355,64 +355,29 @@ pre code {
 
 
 
-<h1 class="title toc-ignore">WEBMICE - Installation</h1>
-<h3 class="subtitle">webmice 0.0.1 (December 2023)</h3>
-<h4 class="author"></h4>
+<h1 class="title toc-ignore">Get started</h1>
+<h4 class="date">2024-03-08</h4>
 
 </div>
 
 
-<div id="step-by-step-to-start-the-api" class="section level2">
-<h2>Step-by-step to start the API</h2>
-<div id="clone-repository" class="section level3">
-<h3>Clone Repository</h3>
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>WEBMICE is a web service for imputing and analysing incomplete
+datasets. WEBMICE provides a language-independent API to the
+functionality of the MICE R package. It can</p>
 <ol style="list-style-type: decimal">
-<li>Open the WEBMICE repository on GitHub <a href="https://github.com/amices/webmice"><code>webmice</code></a>.</li>
-<li>Download the GitHub desktop <a href="https://desktop.github.com/">here</a> and install it. Reboot your
-PC once it is completely installed.</li>
-<li>Clone the repository to your local machine by clicking the green
-button <code>Code</code> then choose
-<code>Open with GitHub Desktop</code>. <img src="img/clone-github.png" alt="Clone the repository" /></li>
-<li>Open RStudio and go to <code>Terminal</code> to run
-<code>Docker code</code> in README file with Docker heading. However,
-you should setup the Docker first.</li>
-<li>As an alternative, run this code in <code>Terminal</code>.</li>
+<li>read data from local system of the client;</li>
+<li>create multiple complete versions from incomplete data;</li>
+<li>analyse each of the imputed datasets;</li>
+<li>pool the analyses results into one result.</li>
 </ol>
-<pre><code>export WEBMICE_LOC=&quot;&lt;location of webmice repo&gt;&quot;
-cd &quot;&lt;location of webmice repo&gt;&quot;
-Rscript webmice.R</code></pre>
-</div>
-<div id="docker-setup" class="section level3">
-<h3>Docker Setup</h3>
-<ol style="list-style-type: decimal">
-<li>Set up Docker Desktop by installing it from this <a href="https://docs.docker.com/get-docker/">web</a>. Docker Desktop
-requires a minimum of 2 GB of RAM and 20 GB of disk space to run.</li>
-<li>In Windows, you might need to install WSL2. Open the command prompt
-and type <code>wsl --install</code> or if you already installed it,
-check for the updates <code>wsl --update</code>.</li>
-<li>Do not close your Docker Desktop when trying to run below code. Keep
-in mind that the Dockerfile is located in the same path as your working
-directory.</li>
-</ol>
-<pre><code>docker build -t webmice -f docker/Dockerfile .
-docker run -it -p 8080:8080 -v &lt;/path/to/local/datafolder&gt;:/home/webmice/testdata webmice
-# get a shell inside of the docker image for debugging
-docker exec -it webmice bash</code></pre>
-<p>Change <code>&lt;/path/to/local/datafolder&gt;</code>to your local
-path. You only need the
-<code>-v &lt;/path/to/local/datafolder&gt;:/home/webmice/testdata</code>
-flag if you want to make some of your local data known to the docker
-image to use them as input data for the HTTP API.</p>
-</div>
-<div id="open-the-api" class="section level3">
-<h3>Open the API</h3>
-<ol style="list-style-type: decimal">
-<li>Go to your browser</li>
-<li>Open <a href="http://localhost:8080/doc/" class="uri">http://localhost:8080/doc/</a></li>
-<li>Try it out!</li>
-</ol>
-<div id="primary-webmice-user-functionality" class="section level4">
-<h4>Primary WEBMICE user functionality</h4>
+<p>WEBMICE is a RESTful API that runs on a (remote) host. In principle,
+any <code>HTTP</code> client will work with WEBMICE. The following
+sections illustrate how a client can make requests to WEBMICE using
+various client languages.</p>
+<div id="primary-webmice-end-points" class="section level3">
+<h3>Primary WEBMICE end points</h3>
 <table style="width:100%;">
 <colgroup>
 <col width="6%" />
@@ -481,12 +446,768 @@ and <code>nhanes2</code>)</td>
 </tr>
 </tbody>
 </table>
-<ol start="4" style="list-style-type: decimal">
-<li>If you want to upload your own data, you can upload your dataset in
-Swagger API. The variables must be less than 50 variables (number of
-columns) and in CSV format.</li>
-</ol>
+<p>The table lists the defined API end points and the internal mapping
+between the API end point and the corresponding R function.</p>
 </div>
+<div id="objective" class="section level3">
+<h3>Objective</h3>
+<p>This document provides a quick introduction into the main WEBMICE
+features, and how these can be assessed from <code>R</code> and from the
+bash command line.</p>
+</div>
+</div>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>See the <a href="./vignettes/installation.Rmd">installation
+guide</a>.</p>
+</div>
+<div id="features" class="section level2">
+<h2>Features</h2>
+<div id="section" class="section level3 tabset">
+<h3 class="tabset"></h3>
+<div id="r" class="section level4">
+<h4><strong>R</strong></h4>
+<div id="version-obtain-version-information" class="section level5">
+<h5><strong><code>/version</code></strong>: Obtain version
+information</h5>
+<p>Let us first check whether WEBMICE is running. The following code
+makes a simple request to WEBMICE to see whether it is alive and to
+return the version number of the underlying <code>mice</code> R package.
+We illustrate both requests in <code>R</code> and in
+<code>bash</code>.</p>
+<p>We first need to install and load packages.</p>
+<pre class="r"><code># install.packages(c(&quot;httr2&quot;, &quot;jsonlite&quot;))</code></pre>
+<pre class="r"><code>library(httr2)</code></pre>
+<pre><code>## Warning: package &#39;httr2&#39; was built under R version 4.2.2</code></pre>
+<pre class="r"><code>library(jsonlite)</code></pre>
+<pre><code>## Warning: package &#39;jsonlite&#39; was built under R version 4.2.3</code></pre>
+<p>Let’s find out the WEBMICE version number. In this document, we
+define the server that hosts WEBMICE as follows, and optionally create a
+variable <code>.host</code> for use in the bash terminal.</p>
+<pre class="r"><code>host &lt;- &quot;http://localhost:8080&quot;</code></pre>
+<p>We first illustrate a method that makes a request to the server. The
+following command prepares a GET request <code>req</code> to the
+<code>/version</code> end point:</p>
+<pre class="r"><code>req &lt;- request(host) |&gt; 
+  req_headers(accept = &quot;text/plain&quot;) |&gt; 
+  req_url_path(&quot;/version&quot;)
+req</code></pre>
+<pre><code>## &lt;httr2_request&gt;</code></pre>
+<pre><code>## GET http://localhost:8080/version</code></pre>
+<pre><code>## Headers:</code></pre>
+<pre><code>## • accept: &#39;text/plain&#39;</code></pre>
+<pre><code>## Body: empty</code></pre>
+<p>The next step sends the request to the API server, and stores the
+result in the server response <code>resp</code>:</p>
+<pre class="r"><code>resp &lt;- req_perform(req)
+resp</code></pre>
+<pre><code>## &lt;httr2_response&gt;</code></pre>
+<pre><code>## GET http://localhost:8080/version</code></pre>
+<pre><code>## Status: 200 OK</code></pre>
+<pre><code>## Content-Type: text/plain</code></pre>
+<pre><code>## Body: In memory (56 bytes)</code></pre>
+<p>The next step parses the <code>resp</code> object and converts the
+body into an R list:</p>
+<pre class="r"><code>ret &lt;- resp |&gt; 
+  resp_body_string() |&gt; 
+  fromJSON()
+ret</code></pre>
+<pre><code>## $success
+## [1] TRUE
+## 
+## $error
+## [1] &quot;&quot;
+## 
+## $result
+## [1] &quot;3.16.5.9001&quot;</code></pre>
+<p>See the documentation of the <code>httr2</code> package for other
+operations and extractions. One may chain the above operations as:</p>
+<pre class="r"><code>request(host) |&gt; 
+  req_headers(accept = &quot;text/plain&quot;) |&gt; 
+  req_url_path(&quot;/version&quot;) |&gt; 
+  req_perform() |&gt; 
+  resp_body_string() |&gt; 
+  fromJSON()</code></pre>
+<pre><code>## $success
+## [1] TRUE
+## 
+## $error
+## [1] &quot;&quot;
+## 
+## $result
+## [1] &quot;3.16.5.9001&quot;</code></pre>
+</div>
+<div id="exampledata-impute-built-in-dataset" class="section level5">
+<h5><strong><code>/exampledata</code></strong>: Impute built-in
+dataset</h5>
+<pre class="r"><code>req_ex &lt;- request(host) |&gt; 
+  req_headers(accept = &quot;text/json&quot;) |&gt; 
+  req_url_path(&quot;/exampledata&quot;) |&gt; 
+  req_url_query(name = &quot;nhanes&quot;)
+req_ex |&gt; req_dry_run()</code></pre>
+<pre><code>## GET /exampledata?name=nhanes HTTP/1.1
+## Host: localhost:8080
+## User-Agent: httr2/0.2.2 r-curl/5.0.0 libcurl/7.84.0
+## Accept-Encoding: deflate, gzip
+## accept: text/json</code></pre>
+<pre class="r"><code>resp_ex &lt;- req_perform(req_ex)
+ret_ex &lt;- resp_ex |&gt; 
+  resp_body_string() |&gt; 
+  fromJSON()
+head(ret_ex$result)</code></pre>
+<pre><code>##   age  bmi hyp chl
+## 1   1   NA  NA  NA
+## 2   2 22.7   1 187
+## 3   1   NA   1 187
+## 4   3   NA  NA  NA
+## 5   1 20.4   1 113
+## 6   3   NA  NA 184</code></pre>
+</div>
+<div id="long-impute-built-in-dataset" class="section level5">
+<h5><strong><code>/long</code></strong>: Impute built-in dataset</h5>
+<p>Raw call</p>
+<pre class="r"><code>resp &lt;- request(&quot;http://localhost:8080/long?payload=%7B%22data%22%3A%22nhanes%22%2C%22maxit%22%3A2%2C%22m%22%3A2%2C%22seed%22%3A1%7D&quot;) %&gt;% 
+  req_method(&quot;GET&quot;) |&gt; 
+  req_headers(accept = &quot;text/json&quot;) |&gt; 
+  req_perform()
+ret &lt;- resp |&gt; 
+  resp_body_string() |&gt; 
+  fromJSON()
+head(ret$result)</code></pre>
+<pre><code>##   age .imp .id  bmi hyp chl
+## 1   1    0   1   NA  NA  NA
+## 2   2    0   2 22.7   1 187
+## 3   1    0   3   NA   1 187
+## 4   3    0   4   NA  NA  NA
+## 5   1    0   5 20.4   1 113
+## 6   3    0   6   NA  NA 184</code></pre>
+<p>A more user-friendly call</p>
+<pre class="r"><code>req_long &lt;- request(host) |&gt; 
+  req_headers(&quot;accept&quot; = &quot;text/json&quot;) |&gt; 
+  req_url_path(&quot;/long&quot;) |&gt; 
+  req_url_query(payload = &#39;{&quot;data&quot;:&quot;nhanes&quot;,&quot;maxit&quot;:2,&quot;m&quot;:1,&quot;seed&quot;:1}&#39;)
+req_long |&gt; req_dry_run()</code></pre>
+<pre><code>## GET /long?payload=%7B%22data%22%3A%22nhanes%22%2C%22maxit%22%3A2%2C%22m%22%3A1%2C%22seed%22%3A1%7D HTTP/1.1
+## Host: localhost:8080
+## User-Agent: httr2/0.2.2 r-curl/5.0.0 libcurl/7.84.0
+## Accept-Encoding: deflate, gzip
+## accept: text/json</code></pre>
+<pre class="r"><code>resp_long &lt;- req_perform(req_long)
+ret_long &lt;- resp_long |&gt; 
+  resp_body_string() |&gt; 
+  fromJSON()
+head(ret_long$result)</code></pre>
+<pre><code>##   age .imp .id  bmi hyp chl
+## 1   1    0   1   NA  NA  NA
+## 2   2    0   2 22.7   1 187
+## 3   1    0   3   NA   1 187
+## 4   3    0   4   NA  NA  NA
+## 5   1    0   5 20.4   1 113
+## 6   3    0   6   NA  NA 184</code></pre>
+</div>
+<div id="fit-some-predifined-fits" class="section level5">
+<h5><strong><code>/fit</code></strong>: Some predifined fits</h5>
+<p>All result from <code>/long</code> as input for <code>/fit</code>. A
+more user-friendly call (data comes from
+<code>complete(..., action = &#39;long&#39;, include = TRUE)</code>)</p>
+<pre class="r"><code>body_long &lt;- (toJSON(ret_long$result))
+
+req_fit &lt;- request(host) |&gt; 
+  req_headers(&quot;accept&quot; = &quot;text/json&quot;) |&gt;
+  req_url_path(&quot;/fit&quot;) |&gt; 
+  req_url_query(payload = paste0(&#39;{&quot;data&quot;:&#39;, body_long,&#39;, &quot;model&quot;:[&quot;lm&quot;], &quot;formula&quot;:[&quot;chl ~ age + bmi&quot;]}&#39;))
+req_dry_run(req_fit)</code></pre>
+<pre><code>## GET /fit?payload=%7B%22data%22%3A%5B%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%221%22%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A%222%22%2C%22bmi%22%3A22.7%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%223%22%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A%224%22%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%225%22%2C%22bmi%22%3A20.4%2C%22hyp%22%3A1%2C%22chl%22%3A113%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A%226%22%2C%22chl%22%3A184%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%227%22%2C%22bmi%22%3A22.5%2C%22hyp%22%3A1%2C%22chl%22%3A118%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%228%22%2C%22bmi%22%3A30.1%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A%229%22%2C%22bmi%22%3A22%2C%22hyp%22%3A1%2C%22chl%22%3A238%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A%2210%22%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%2211%22%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A%2212%22%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A%2213%22%2C%22bmi%22%3A21.7%2C%22hyp%22%3A1%2C%22chl%22%3A206%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A%2214%22%2C%22bmi%22%3A28.7%2C%22hyp%22%3A2%2C%22chl%22%3A204%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%2215%22%2C%22bmi%22%3A29.6%2C%22hyp%22%3A1%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%2216%22%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A%2217%22%2C%22bmi%22%3A27.2%2C%22hyp%22%3A2%2C%22chl%22%3A284%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A%2218%22%2C%22bmi%22%3A26.3%2C%22hyp%22%3A2%2C%22chl%22%3A199%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%2219%22%2C%22bmi%22%3A35.3%2C%22hyp%22%3A1%2C%22chl%22%3A218%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A%2220%22%2C%22bmi%22%3A25.5%2C%22hyp%22%3A2%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%2221%22%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%2222%22%2C%22bmi%22%3A33.2%2C%22hyp%22%3A1%2C%22chl%22%3A229%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A%2223%22%2C%22bmi%22%3A27.5%2C%22hyp%22%3A1%2C%22chl%22%3A131%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A%2224%22%2C%22bmi%22%3A24.9%2C%22hyp%22%3A1%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A%2225%22%2C%22bmi%22%3A27.4%2C%22hyp%22%3A1%2C%22chl%22%3A186%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%221%22%2C%22bmi%22%3A29.6%2C%22hyp%22%3A1%2C%22chl%22%3A238%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A%222%22%2C%22bmi%22%3A22.7%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%223%22%2C%22bmi%22%3A28.7%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A%224%22%2C%22bmi%22%3A22.7%2C%22hyp%22%3A2%2C%22chl%22%3A206%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%225%22%2C%22bmi%22%3A20.4%2C%22hyp%22%3A1%2C%22chl%22%3A113%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A%226%22%2C%22bmi%22%3A25.5%2C%22hyp%22%3A2%2C%22chl%22%3A184%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%227%22%2C%22bmi%22%3A22.5%2C%22hyp%22%3A1%2C%22chl%22%3A118%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%228%22%2C%22bmi%22%3A30.1%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A%229%22%2C%22bmi%22%3A22%2C%22hyp%22%3A1%2C%22chl%22%3A238%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A%2210%22%2C%22bmi%22%3A28.7%2C%22hyp%22%3A1%2C%22chl%22%3A184%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%2211%22%2C%22bmi%22%3A22.5%2C%22hyp%22%3A1%2C%22chl%22%3A238%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A%2212%22%2C%22bmi%22%3A26.3%2C%22hyp%22%3A1%2C%22chl%22%3A229%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A%2213%22%2C%22bmi%22%3A21.7%2C%22hyp%22%3A1%2C%22chl%22%3A206%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A%2214%22%2C%22bmi%22%3A28.7%2C%22hyp%22%3A2%2C%22chl%22%3A204%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%2215%22%2C%22bmi%22%3A29.6%2C%22hyp%22%3A1%2C%22chl%22%3A131%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%2216%22%2C%22bmi%22%3A33.2%2C%22hyp%22%3A2%2C%22chl%22%3A187%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A%2217%22%2C%22bmi%22%3A27.2%2C%22hyp%22%3A2%2C%22chl%22%3A284%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A%2218%22%2C%22bmi%22%3A26.3%2C%22hyp%22%3A2%2C%22chl%22%3A199%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%2219%22%2C%22bmi%22%3A35.3%2C%22hyp%22%3A1%2C%22chl%22%3A218%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A%2220%22%2C%22bmi%22%3A25.5%2C%22hyp%22%3A2%2C%22chl%22%3A284%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%2221%22%2C%22bmi%22%3A33.2%2C%22hyp%22%3A1%2C%22chl%22%3A229%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%2222%22%2C%22bmi%22%3A33.2%2C%22hyp%22%3A1%2C%22chl%22%3A229%7D%2C%7B%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A%2223%22%2C%22bmi%22%3A27.5%2C%22hyp%22%3A1%2C%22chl%22%3A131%7D%2C%7B%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A%2224%22%2C%22bmi%22%3A24.9%2C%22hyp%22%3A1%2C%22chl%22%3A206%7D%2C%7B%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A%2225%22%2C%22bmi%22%3A27.4%2C%22hyp%22%3A1%2C%22chl%22%3A186%7D%5D%2C%20%22model%22%3A%5B%22lm%22%5D%2C%20%22formula%22%3A%5B%22chl%20~%20age%20%2B%20bmi%22%5D%7D HTTP/1.1
+## Host: localhost:8080
+## User-Agent: httr2/0.2.2 r-curl/5.0.0 libcurl/7.84.0
+## Accept-Encoding: deflate, gzip
+## accept: text/json</code></pre>
+<pre class="r"><code>resp_fit &lt;- req_fit |&gt; req_perform()
+ret_fit &lt;- resp_fit |&gt; 
+  resp_body_string() |&gt; 
+  fromJSON()
+ret_fit$result</code></pre>
+<pre><code>##          term estimate std.error statistic p.value nobs df.residual
+## 1 (Intercept)  18.6899   67.8316    0.2755  0.7855   25          22
+## 2         age  32.1300   10.4163    3.0846  0.0054   25          22
+## 3         bmi   4.6225    2.1182    2.1823  0.0400   25          22</code></pre>
+</div>
+<div id="pool-pool-results-of-a-fit-given-its-summary-table-mice-3.14.4-or-higher" class="section level5">
+<h5><strong><code>/pool</code></strong>: Pool results of a fit given its
+summary table (mice 3.14.4 or higher)</h5>
+<pre class="r"><code>resp2 &lt;- request(&quot;http://localhost:8080/pool?payload=%7B%22data%22%3A%20%5B%7B%22term%22%3A%22%28Intercept%29%22%2C%22estimate%22%3A23.9357%2C%22std.error%22%3A3.8732%2C%20%22statistic%22%3A6.1798%2C%22p.value%22%3A3.2106e-06%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%20%7B%22term%22%3A%22hyp%22%2C%22estimate%22%3A1.1677%2C%22std.error%22%3A1.6218%2C%22statistic%22%3A0.72%2C%20%22p.value%22%3A0.4791%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%7B%22term%22%3A%22chl%22%2C%22estimate%22%3A0.0063%2C%20%22std.error%22%3A0.0185%2C%22statistic%22%3A0.3385%2C%22p.value%22%3A0.7382%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%20%7B%22term%22%3A%22%28Intercept%29%22%2C%22estimate%22%3A24.5434%2C%22std.error%22%3A4.7611%2C%22statistic%22%3A5.155%2C%20%22p.value%22%3A0%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%7B%22term%22%3A%22hyp%22%2C%22estimate%22%3A1.5843%2C%20%22std.error%22%3A2.236%2C%22statistic%22%3A0.7086%2C%22p.value%22%3A0.486%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%20%7B%22term%22%3A%22chl%22%2C%22estimate%22%3A-0.0032%2C%22std.error%22%3A0.0205%2C%22statistic%22%3A-0.1569%2C%20%22p.value%22%3A0.8768%2C%22nobs%22%3A25%2C%22df.residual%22%3A25%7D%5D%7D&quot;) %&gt;% 
+  req_method(&quot;GET&quot;) |&gt; 
+  req_headers(accept = &quot;text/json&quot;) |&gt; 
+  req_perform()
+ret2 &lt;- resp2 |&gt; 
+  resp_body_string() |&gt; 
+  fromJSON()
+head(ret2$result)</code></pre>
+<pre><code>##          term m estimate std.error statistic      df p.value conf.low conf.high
+## 1 (Intercept) 2  24.2396    4.3717    5.5446 19.8635  0.0000  15.1163   33.3628
+## 2         hyp 2   1.3760    1.9862    0.6928 19.1639  0.4968  -2.7788    5.5308
+## 3         chl 2   0.0016    0.0212    0.0732 12.3592  0.9429  -0.0445    0.0476
+##      riv lambda    fmi    ubar      b       t dfcom
+## 1 0.0147 0.0145 0.1007 18.8349 0.1846 19.1119    22
+## 2 0.0341 0.0330 0.1203  3.8150 0.0868  3.9451    22
+## 3 0.1775 0.1508 0.2614  0.0004 0.0000  0.0004    22</code></pre>
+<p>A more user-friendly call</p>
+<pre class="r"><code>body_fit &lt;- as.character(toJSON(ret_fit$result))
+
+req_pool &lt;- request(host) |&gt; 
+  req_headers(&quot;accept&quot; = &quot;text/json&quot;) |&gt;
+  req_url_path(&quot;/pool&quot;) |&gt; 
+  req_url_query(payload = paste0(&#39;{&quot;data&quot;:&#39;, body_fit,&#39;}&#39;)) 
+req_dry_run(req_pool)</code></pre>
+<pre><code>## GET /pool?payload=%7B%22data%22%3A%5B%7B%22term%22%3A%22%28Intercept%29%22%2C%22estimate%22%3A18.6899%2C%22std.error%22%3A67.8316%2C%22statistic%22%3A0.2755%2C%22p.value%22%3A0.7855%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%7B%22term%22%3A%22age%22%2C%22estimate%22%3A32.13%2C%22std.error%22%3A10.4163%2C%22statistic%22%3A3.0846%2C%22p.value%22%3A0.0054%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%7B%22term%22%3A%22bmi%22%2C%22estimate%22%3A4.6225%2C%22std.error%22%3A2.1182%2C%22statistic%22%3A2.1823%2C%22p.value%22%3A0.04%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%5D%7D HTTP/1.1
+## Host: localhost:8080
+## User-Agent: httr2/0.2.2 r-curl/5.0.0 libcurl/7.84.0
+## Accept-Encoding: deflate, gzip
+## accept: text/json</code></pre>
+<pre class="r"><code>resp_pool &lt;- req_pool |&gt; req_perform()
+ret_pool &lt;- resp_pool |&gt; 
+  resp_body_string() |&gt; 
+  fromJSON()
+ret_pool$result</code></pre>
+<pre><code>##          term m estimate      ubar dfcom
+## 1 (Intercept) 1  18.6899 4601.1260    22
+## 2         age 1  32.1300  108.4993    22
+## 3         bmi 1   4.6225    4.4868    22</code></pre>
+</div>
+<div id="data-upload-data" class="section level5">
+<h5><strong><code>/data</code></strong>: Upload data</h5>
+<p>Uploading data to WEBMICE can be done by sending a text file. Suppose
+that <code>../testdata/tempdata.csv</code> is a comma-delimited file
+with data. We may upload it as</p>
+<pre class="r"><code>file_path &lt;- file.path(&quot;testdata&quot;, &quot;tempdata.csv&quot;)
+input &lt;- curl::form_file(file_path, type = &quot;text/csv&quot;)
+#input &lt;- curl::form_file(&quot;testdata/tempdata.csv&quot;, type = &quot;text/csv&quot;)
+resp &lt;- request(host) |&gt; 
+  req_url_path(&quot;/data&quot;) |&gt; 
+  req_headers(&quot;accept&quot; = &quot;text/plain&quot;, 
+              &quot;content-type&quot; = &quot;multipart/form-data&quot;) |&gt;
+  req_body_multipart(csvfile = input) |&gt; 
+  req_perform()
+resp_header(resp, &quot;data_token&quot;)</code></pre>
+<pre><code>## [1] &quot;c440975a6e58e90902b8618910a2dbd3&quot;</code></pre>
+<p>The file is uploaded to the server. The <code>data_token</code>
+header may be used for subsequent requests to refer to the uploaded
+data.</p>
+</div>
+<div id="long-impute-data-using-the-token" class="section level5">
+<h5><strong><code>/long</code></strong>: Impute data using the
+token</h5>
+<pre class="r"><code>token &lt;- resp_header(resp, &quot;data_token&quot;)
+token_with_quotes &lt;- paste0(&#39;&quot;&#39;, token, &#39;&quot;&#39;)
+print(token_with_quotes)</code></pre>
+<pre><code>## [1] &quot;\&quot;c440975a6e58e90902b8618910a2dbd3\&quot;&quot;</code></pre>
+<pre class="r"><code>req_longdata &lt;- request(host) |&gt; 
+  req_headers(&quot;accept&quot; = &quot;text/json&quot;) |&gt;
+  req_url_path(&quot;/long&quot;) |&gt; 
+  req_url_query(payload = paste0(&#39;{&quot;data&quot;:&#39;, token_with_quotes,  &#39;,&quot;maxit&quot;:2,&quot;m&quot;:1,&quot;seed&quot;:1}&#39;)) 
+req_longdata |&gt; req_dry_run()</code></pre>
+<pre><code>## GET /long?payload=%7B%22data%22%3A%22c440975a6e58e90902b8618910a2dbd3%22%2C%22maxit%22%3A2%2C%22m%22%3A1%2C%22seed%22%3A1%7D HTTP/1.1
+## Host: localhost:8080
+## User-Agent: httr2/0.2.2 r-curl/5.0.0 libcurl/7.84.0
+## Accept-Encoding: deflate, gzip
+## accept: text/json</code></pre>
+<pre class="r"><code>resp_longdata &lt;- req_longdata |&gt; req_perform()
+ret_longdata &lt;- resp_longdata |&gt; 
+  resp_body_string() |&gt; 
+  fromJSON()
+head(ret_longdata$result)</code></pre>
+<pre><code>##   ...1 age .imp .id  bmi hyp chl
+## 1    1   1    0   1   NA  NA  NA
+## 2    2   2    0   2 22.7   1 187
+## 3    3   1    0   3   NA   1 187
+## 4    4   3    0   4   NA  NA  NA
+## 5    5   1    0   5 20.4   1 113
+## 6    6   3    0   6   NA  NA 184</code></pre>
+</div>
+<div id="fit-some-predifined-fits-1" class="section level5">
+<h5><strong><code>/fit</code></strong>: Some predifined fits</h5>
+<pre class="r"><code>body_longdata &lt;- as.character(toJSON(ret_longdata$result))
+
+req_fitdata &lt;- request(host) |&gt; 
+  req_headers(&quot;accept&quot; = &quot;text/json&quot;) |&gt;
+  req_url_path(&quot;/fit&quot;) |&gt; 
+  req_url_query(payload = paste0(&#39;{&quot;data&quot;:&#39;, body_longdata,&#39;, &quot;model&quot;:[&quot;lm&quot;], &quot;formula&quot;:[&quot;chl ~ age + bmi&quot;]}&#39;))
+req_dry_run(req_fitdata)</code></pre>
+<pre><code>## GET /fit?payload=%7B%22data%22%3A%5B%7B%22...1%22%3A1%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A1%7D%2C%7B%22...1%22%3A2%2C%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A2%2C%22bmi%22%3A22.7%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22...1%22%3A3%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A3%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22...1%22%3A4%2C%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A4%7D%2C%7B%22...1%22%3A5%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A5%2C%22bmi%22%3A20.4%2C%22hyp%22%3A1%2C%22chl%22%3A113%7D%2C%7B%22...1%22%3A6%2C%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A6%2C%22chl%22%3A184%7D%2C%7B%22...1%22%3A7%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A7%2C%22bmi%22%3A22.5%2C%22hyp%22%3A1%2C%22chl%22%3A118%7D%2C%7B%22...1%22%3A8%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A8%2C%22bmi%22%3A30.1%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22...1%22%3A9%2C%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A9%2C%22bmi%22%3A22%2C%22hyp%22%3A1%2C%22chl%22%3A238%7D%2C%7B%22...1%22%3A10%2C%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A10%7D%2C%7B%22...1%22%3A11%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A11%7D%2C%7B%22...1%22%3A12%2C%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A12%7D%2C%7B%22...1%22%3A13%2C%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A13%2C%22bmi%22%3A21.7%2C%22hyp%22%3A1%2C%22chl%22%3A206%7D%2C%7B%22...1%22%3A14%2C%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A14%2C%22bmi%22%3A28.7%2C%22hyp%22%3A2%2C%22chl%22%3A204%7D%2C%7B%22...1%22%3A15%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A15%2C%22bmi%22%3A29.6%2C%22hyp%22%3A1%7D%2C%7B%22...1%22%3A16%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A16%7D%2C%7B%22...1%22%3A17%2C%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A17%2C%22bmi%22%3A27.2%2C%22hyp%22%3A2%2C%22chl%22%3A284%7D%2C%7B%22...1%22%3A18%2C%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A18%2C%22bmi%22%3A26.3%2C%22hyp%22%3A2%2C%22chl%22%3A199%7D%2C%7B%22...1%22%3A19%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A19%2C%22bmi%22%3A35.3%2C%22hyp%22%3A1%2C%22chl%22%3A218%7D%2C%7B%22...1%22%3A20%2C%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A20%2C%22bmi%22%3A25.5%2C%22hyp%22%3A2%7D%2C%7B%22...1%22%3A21%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A21%7D%2C%7B%22...1%22%3A22%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A22%2C%22bmi%22%3A33.2%2C%22hyp%22%3A1%2C%22chl%22%3A229%7D%2C%7B%22...1%22%3A23%2C%22age%22%3A1%2C%22.imp%22%3A0%2C%22.id%22%3A23%2C%22bmi%22%3A27.5%2C%22hyp%22%3A1%2C%22chl%22%3A131%7D%2C%7B%22...1%22%3A24%2C%22age%22%3A3%2C%22.imp%22%3A0%2C%22.id%22%3A24%2C%22bmi%22%3A24.9%2C%22hyp%22%3A1%7D%2C%7B%22...1%22%3A25%2C%22age%22%3A2%2C%22.imp%22%3A0%2C%22.id%22%3A25%2C%22bmi%22%3A27.4%2C%22hyp%22%3A1%2C%22chl%22%3A186%7D%2C%7B%22...1%22%3A1%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A1%2C%22bmi%22%3A30.1%2C%22hyp%22%3A1%2C%22chl%22%3A284%7D%2C%7B%22...1%22%3A2%2C%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A2%2C%22bmi%22%3A22.7%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22...1%22%3A3%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A3%2C%22bmi%22%3A22%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22...1%22%3A4%2C%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A4%2C%22bmi%22%3A20.4%2C%22hyp%22%3A1%2C%22chl%22%3A204%7D%2C%7B%22...1%22%3A5%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A5%2C%22bmi%22%3A20.4%2C%22hyp%22%3A1%2C%22chl%22%3A113%7D%2C%7B%22...1%22%3A6%2C%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A6%2C%22bmi%22%3A20.4%2C%22hyp%22%3A2%2C%22chl%22%3A184%7D%2C%7B%22...1%22%3A7%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A7%2C%22bmi%22%3A22.5%2C%22hyp%22%3A1%2C%22chl%22%3A118%7D%2C%7B%22...1%22%3A8%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A8%2C%22bmi%22%3A30.1%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22...1%22%3A9%2C%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A9%2C%22bmi%22%3A22%2C%22hyp%22%3A1%2C%22chl%22%3A238%7D%2C%7B%22...1%22%3A10%2C%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A10%2C%22bmi%22%3A22%2C%22hyp%22%3A2%2C%22chl%22%3A238%7D%2C%7B%22...1%22%3A11%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A11%2C%22bmi%22%3A28.7%2C%22hyp%22%3A1%2C%22chl%22%3A199%7D%2C%7B%22...1%22%3A12%2C%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A12%2C%22bmi%22%3A27.4%2C%22hyp%22%3A1%2C%22chl%22%3A187%7D%2C%7B%22...1%22%3A13%2C%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A13%2C%22bmi%22%3A21.7%2C%22hyp%22%3A1%2C%22chl%22%3A206%7D%2C%7B%22...1%22%3A14%2C%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A14%2C%22bmi%22%3A28.7%2C%22hyp%22%3A2%2C%22chl%22%3A204%7D%2C%7B%22...1%22%3A15%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A15%2C%22bmi%22%3A29.6%2C%22hyp%22%3A1%2C%22chl%22%3A186%7D%2C%7B%22...1%22%3A16%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A16%2C%22bmi%22%3A28.7%2C%22hyp%22%3A1%2C%22chl%22%3A199%7D%2C%7B%22...1%22%3A17%2C%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A17%2C%22bmi%22%3A27.2%2C%22hyp%22%3A2%2C%22chl%22%3A284%7D%2C%7B%22...1%22%3A18%2C%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A18%2C%22bmi%22%3A26.3%2C%22hyp%22%3A2%2C%22chl%22%3A199%7D%2C%7B%22...1%22%3A19%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A19%2C%22bmi%22%3A35.3%2C%22hyp%22%3A1%2C%22chl%22%3A218%7D%2C%7B%22...1%22%3A20%2C%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A20%2C%22bmi%22%3A25.5%2C%22hyp%22%3A2%2C%22chl%22%3A229%7D%2C%7B%22...1%22%3A21%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A21%2C%22bmi%22%3A35.3%2C%22hyp%22%3A1%2C%22chl%22%3A199%7D%2C%7B%22...1%22%3A22%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A22%2C%22bmi%22%3A33.2%2C%22hyp%22%3A1%2C%22chl%22%3A229%7D%2C%7B%22...1%22%3A23%2C%22age%22%3A1%2C%22.imp%22%3A1%2C%22.id%22%3A23%2C%22bmi%22%3A27.5%2C%22hyp%22%3A1%2C%22chl%22%3A131%7D%2C%7B%22...1%22%3A24%2C%22age%22%3A3%2C%22.imp%22%3A1%2C%22.id%22%3A24%2C%22bmi%22%3A24.9%2C%22hyp%22%3A1%2C%22chl%22%3A238%7D%2C%7B%22...1%22%3A25%2C%22age%22%3A2%2C%22.imp%22%3A1%2C%22.id%22%3A25%2C%22bmi%22%3A27.4%2C%22hyp%22%3A1%2C%22chl%22%3A186%7D%5D%2C%20%22model%22%3A%5B%22lm%22%5D%2C%20%22formula%22%3A%5B%22chl%20~%20age%20%2B%20bmi%22%5D%7D HTTP/1.1
+## Host: localhost:8080
+## User-Agent: httr2/0.2.2 r-curl/5.0.0 libcurl/7.84.0
+## Accept-Encoding: deflate, gzip
+## accept: text/json</code></pre>
+<pre class="r"><code>resp_fitdata &lt;- req_fitdata |&gt; req_perform()
+ret_fitdata &lt;- resp_fitdata |&gt; 
+  resp_body_string() |&gt; 
+  fromJSON()
+ret_fitdata$result</code></pre>
+<pre><code>##          term estimate std.error statistic p.value nobs df.residual
+## 1 (Intercept)   2.1423   57.5893    0.0372  0.9707   25          22
+## 2         age  32.8323    9.5736    3.4295  0.0024   25          22
+## 3         bmi   5.3573    1.7743    3.0194  0.0063   25          22</code></pre>
+</div>
+<div id="pool-pool-results-of-a-fit-given-its-summary-table-mice-3.14.4-or-higher-1" class="section level5">
+<h5><strong><code>/pool</code></strong>: Pool results of a fit given its
+summary table (mice 3.14.4 or higher)</h5>
+<pre class="r"><code>body_fitdata&lt;- as.character(toJSON(ret_fitdata$result))
+
+req_pooldata &lt;- request(host) |&gt; 
+  req_headers(&quot;accept&quot; = &quot;text/json&quot;) |&gt;
+  req_url_path(&quot;/pool&quot;) |&gt; 
+  req_url_query(payload = paste0(&#39;{&quot;data&quot;:&#39;,body_fit,&#39;}&#39;) )
+req_dry_run(req_pooldata)</code></pre>
+<pre><code>## GET /pool?payload=%7B%22data%22%3A%5B%7B%22term%22%3A%22%28Intercept%29%22%2C%22estimate%22%3A18.6899%2C%22std.error%22%3A67.8316%2C%22statistic%22%3A0.2755%2C%22p.value%22%3A0.7855%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%7B%22term%22%3A%22age%22%2C%22estimate%22%3A32.13%2C%22std.error%22%3A10.4163%2C%22statistic%22%3A3.0846%2C%22p.value%22%3A0.0054%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%2C%7B%22term%22%3A%22bmi%22%2C%22estimate%22%3A4.6225%2C%22std.error%22%3A2.1182%2C%22statistic%22%3A2.1823%2C%22p.value%22%3A0.04%2C%22nobs%22%3A25%2C%22df.residual%22%3A22%7D%5D%7D HTTP/1.1
+## Host: localhost:8080
+## User-Agent: httr2/0.2.2 r-curl/5.0.0 libcurl/7.84.0
+## Accept-Encoding: deflate, gzip
+## accept: text/json</code></pre>
+<pre class="r"><code>resp_pooldata &lt;- req_pooldata |&gt; req_perform()
+ret_pooldata &lt;- resp_pooldata |&gt; 
+  resp_body_string() |&gt; 
+  fromJSON()
+ret_pooldata$result</code></pre>
+<pre><code>##          term m estimate      ubar dfcom
+## 1 (Intercept) 1  18.6899 4601.1260    22
+## 2         age 1  32.1300  108.4993    22
+## 3         bmi 1   4.6225    4.4868    22</code></pre>
+</div>
+</div>
+<div id="python" class="section level4">
+<h4><strong>Python</strong></h4>
+<pre class="python"><code>import requests
+from urllib.parse import urljoin
+import urllib.parse
+import json
+import re
+import os
+
+# Specify the url for host
+host = &#39;http://localhost:8080&#39;</code></pre>
+<div id="version-obtain-version-information-1" class="section level5">
+<h5><strong><code>/version</code></strong>: Obtain version
+information</h5>
+<pre class="python"><code>## /version
+
+# Add path
+path_version = &#39;/version&#39;
+
+# Combine the url
+version = urljoin(host,path_version)
+
+# Add headers
+headers = {&#39;Accept&#39;: &#39;application/json&#39;}
+
+# Get the url
+response_version = requests.get(version, headers=headers)
+
+# See the response
+response_version.content</code></pre>
+<pre><code>## b&#39;{&quot;success&quot;:[true],&quot;error&quot;:[&quot;&quot;],&quot;result&quot;:[&quot;3.16.5.9001&quot;]}&#39;</code></pre>
+</div>
+<div id="exampledata-get-the-example-data" class="section level5">
+<h5><strong><code>/exampledata</code></strong>: Get the example
+data</h5>
+<p>There are two different example data sets, namely ‘nhanes’ and
+‘nhanes2’</p>
+<pre class="python"><code># /exampledata (nhanes)
+
+# Add path
+endpoint = &quot;/exampledata&quot;
+
+# Construct the query parameters
+params = {&#39;name&#39;: &#39;nhanes&#39;}
+
+# Additional headers if needed
+headers = {&#39;Accept&#39;: &#39;application/json&#39;}
+
+# Make the GET request
+response = requests.get(host + endpoint, params=params, headers=headers)
+
+# Print the response
+print(response.text)</code></pre>
+<pre><code>## {&quot;success&quot;:[true],&quot;result&quot;:[{&quot;age&quot;:1},{&quot;age&quot;:2,&quot;bmi&quot;:22.7,&quot;hyp&quot;:1,&quot;chl&quot;:187},{&quot;age&quot;:1,&quot;hyp&quot;:1,&quot;chl&quot;:187},{&quot;age&quot;:3},{&quot;age&quot;:1,&quot;bmi&quot;:20.4,&quot;hyp&quot;:1,&quot;chl&quot;:113},{&quot;age&quot;:3,&quot;chl&quot;:184},{&quot;age&quot;:1,&quot;bmi&quot;:22.5,&quot;hyp&quot;:1,&quot;chl&quot;:118},{&quot;age&quot;:1,&quot;bmi&quot;:30.1,&quot;hyp&quot;:1,&quot;chl&quot;:187},{&quot;age&quot;:2,&quot;bmi&quot;:22,&quot;hyp&quot;:1,&quot;chl&quot;:238},{&quot;age&quot;:2},{&quot;age&quot;:1},{&quot;age&quot;:2},{&quot;age&quot;:3,&quot;bmi&quot;:21.7,&quot;hyp&quot;:1,&quot;chl&quot;:206},{&quot;age&quot;:2,&quot;bmi&quot;:28.7,&quot;hyp&quot;:2,&quot;chl&quot;:204},{&quot;age&quot;:1,&quot;bmi&quot;:29.6,&quot;hyp&quot;:1},{&quot;age&quot;:1},{&quot;age&quot;:3,&quot;bmi&quot;:27.2,&quot;hyp&quot;:2,&quot;chl&quot;:284},{&quot;age&quot;:2,&quot;bmi&quot;:26.3,&quot;hyp&quot;:2,&quot;chl&quot;:199},{&quot;age&quot;:1,&quot;bmi&quot;:35.3,&quot;hyp&quot;:1,&quot;chl&quot;:218},{&quot;age&quot;:3,&quot;bmi&quot;:25.5,&quot;hyp&quot;:2},{&quot;age&quot;:1},{&quot;age&quot;:1,&quot;bmi&quot;:33.2,&quot;hyp&quot;:1,&quot;chl&quot;:229},{&quot;age&quot;:1,&quot;bmi&quot;:27.5,&quot;hyp&quot;:1,&quot;chl&quot;:131},{&quot;age&quot;:3,&quot;bmi&quot;:24.9,&quot;hyp&quot;:1},{&quot;age&quot;:2,&quot;bmi&quot;:27.4,&quot;hyp&quot;:1,&quot;chl&quot;:186}],&quot;error&quot;:[&quot;&quot;]}</code></pre>
+</div>
+<div id="long-impute-built-in-dataset-1" class="section level5">
+<h5><strong><code>/long</code></strong>: Impute built-in dataset</h5>
+<pre class="python"><code>## /long
+
+# Add path
+path_long = &#39;/long&#39;
+
+# Combine the url
+long = urljoin(host,path_long)
+
+# Add headers
+headers = {&#39;Accept&#39;: &#39;application/json&#39;}
+
+# Add payload
+params = {&#39;data&#39;:&#39;nhanes&#39;,&#39;maxit&#39;:2,&#39;m&#39;:1,&#39;seed&#39;:1}
+
+# Encode the payload as a JSON string and then URL-encode the entire payload
+payload = urllib.parse.quote(&#39;{&quot;data&quot;:&quot;%s&quot;,&quot;maxit&quot;:%d,&quot;m&quot;:%d,&quot;seed&quot;:%d}&#39; % (params[&#39;data&#39;], params[&#39;maxit&#39;], params[&#39;m&#39;], params[&#39;seed&#39;]))
+
+# Construct the complete URL
+long_url = f&quot;{long}?payload={payload}&quot;
+
+# Make a request using the complete URL
+response = requests.get(long_url)
+
+# Get the response body
+response.json()</code></pre>
+<pre><code>## {&#39;success&#39;: [True], &#39;result&#39;: [{&#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;1&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 22.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;2&#39;}, {&#39;age&#39;: 1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;3&#39;}, {&#39;age&#39;: 3, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;4&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 113, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;5&#39;}, {&#39;age&#39;: 3, &#39;chl&#39;: 184, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;6&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 22.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 118, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;7&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 30.1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;8&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 22, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;9&#39;}, {&#39;age&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;10&#39;}, {&#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;11&#39;}, {&#39;age&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;12&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 21.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 206, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;13&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 2, &#39;chl&#39;: 204, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;14&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 29.6, &#39;hyp&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;15&#39;}, {&#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;16&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 27.2, &#39;hyp&#39;: 2, &#39;chl&#39;: 284, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;17&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 26.3, &#39;hyp&#39;: 2, &#39;chl&#39;: 199, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;18&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 35.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 218, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;19&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 25.5, &#39;hyp&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;20&#39;}, {&#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;21&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;22&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 27.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 131, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;23&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 24.9, &#39;hyp&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;24&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 27.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 186, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;25&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 29.6, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;1&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 22.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;2&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;3&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 22.7, &#39;hyp&#39;: 2, &#39;chl&#39;: 206, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;4&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 113, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;5&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 25.5, &#39;hyp&#39;: 2, &#39;chl&#39;: 184, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;6&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 22.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 118, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;7&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 30.1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;8&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 22, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;9&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 184, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;10&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 22.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;11&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 26.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;12&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 21.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 206, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;13&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 2, &#39;chl&#39;: 204, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;14&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 29.6, &#39;hyp&#39;: 1, &#39;chl&#39;: 131, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;15&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 2, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;16&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 27.2, &#39;hyp&#39;: 2, &#39;chl&#39;: 284, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;17&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 26.3, &#39;hyp&#39;: 2, &#39;chl&#39;: 199, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;18&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 35.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 218, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;19&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 25.5, &#39;hyp&#39;: 2, &#39;chl&#39;: 284, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;20&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;21&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;22&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 27.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 131, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;23&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 24.9, &#39;hyp&#39;: 1, &#39;chl&#39;: 206, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;24&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 27.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 186, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;25&#39;}]}</code></pre>
+<pre class="python"><code>json_response = response.json()
+
+# Access the &quot;result&quot; part
+result_part = json_response.get(&quot;result&quot;, [])
+result_part</code></pre>
+<pre><code>## [{&#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;1&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 22.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;2&#39;}, {&#39;age&#39;: 1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;3&#39;}, {&#39;age&#39;: 3, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;4&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 113, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;5&#39;}, {&#39;age&#39;: 3, &#39;chl&#39;: 184, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;6&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 22.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 118, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;7&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 30.1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;8&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 22, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;9&#39;}, {&#39;age&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;10&#39;}, {&#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;11&#39;}, {&#39;age&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;12&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 21.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 206, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;13&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 2, &#39;chl&#39;: 204, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;14&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 29.6, &#39;hyp&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;15&#39;}, {&#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;16&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 27.2, &#39;hyp&#39;: 2, &#39;chl&#39;: 284, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;17&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 26.3, &#39;hyp&#39;: 2, &#39;chl&#39;: 199, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;18&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 35.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 218, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;19&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 25.5, &#39;hyp&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;20&#39;}, {&#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;21&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;22&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 27.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 131, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;23&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 24.9, &#39;hyp&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;24&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 27.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 186, &#39;.imp&#39;: 0, &#39;.id&#39;: &#39;25&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 29.6, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;1&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 22.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;2&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;3&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 22.7, &#39;hyp&#39;: 2, &#39;chl&#39;: 206, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;4&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 113, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;5&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 25.5, &#39;hyp&#39;: 2, &#39;chl&#39;: 184, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;6&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 22.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 118, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;7&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 30.1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;8&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 22, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;9&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 184, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;10&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 22.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;11&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 26.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;12&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 21.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 206, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;13&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 2, &#39;chl&#39;: 204, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;14&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 29.6, &#39;hyp&#39;: 1, &#39;chl&#39;: 131, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;15&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 2, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;16&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 27.2, &#39;hyp&#39;: 2, &#39;chl&#39;: 284, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;17&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 26.3, &#39;hyp&#39;: 2, &#39;chl&#39;: 199, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;18&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 35.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 218, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;19&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 25.5, &#39;hyp&#39;: 2, &#39;chl&#39;: 284, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;20&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;21&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;22&#39;}, {&#39;age&#39;: 1, &#39;bmi&#39;: 27.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 131, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;23&#39;}, {&#39;age&#39;: 3, &#39;bmi&#39;: 24.9, &#39;hyp&#39;: 1, &#39;chl&#39;: 206, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;24&#39;}, {&#39;age&#39;: 2, &#39;bmi&#39;: 27.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 186, &#39;.imp&#39;: 1, &#39;.id&#39;: &#39;25&#39;}]</code></pre>
+</div>
+<div id="fit-some-predifined-fits-2" class="section level5">
+<h5><strong><code>/fit</code></strong>: Some predifined fits</h5>
+<pre class="python"><code>## /fit
+
+# Add path
+path_fit = &#39;/fit&#39;
+
+# Combine the url
+fit = urljoin(host,path_fit)
+
+# Add headers
+headers = {&#39;Accept&#39;: &#39;application/json&#39;}
+
+# Add payload
+params_fit = {
+    &quot;data&quot;: result_part,
+    &quot;model&quot;: [&quot;lm&quot;],
+    &quot;formula&quot;: [&quot;chl ~ age + bmi&quot;]
+}
+# Encode the payload as a JSON string and then URL-encode the entire payload
+payload_fit = json.dumps(params_fit)
+url_encoded_payload_fit = urllib.parse.quote(payload_fit)
+
+# Construct the complete URL
+fit_url = f&quot;{fit}?payload={url_encoded_payload_fit}&quot;
+
+# Make a request using the complete URL
+response_fit = requests.get(fit_url)
+
+# Get the response body
+json_response_fit = response_fit.json()
+
+# Access the &quot;result&quot; part
+result_fit = json_response_fit.get(&quot;result&quot;, [])
+result_fit</code></pre>
+<pre><code>## [{&#39;term&#39;: &#39;(Intercept)&#39;, &#39;estimate&#39;: 18.6899, &#39;std.error&#39;: 67.8316, &#39;statistic&#39;: 0.2755, &#39;p.value&#39;: 0.7855, &#39;nobs&#39;: 25, &#39;df.residual&#39;: 22}, {&#39;term&#39;: &#39;age&#39;, &#39;estimate&#39;: 32.13, &#39;std.error&#39;: 10.4163, &#39;statistic&#39;: 3.0846, &#39;p.value&#39;: 0.0054, &#39;nobs&#39;: 25, &#39;df.residual&#39;: 22}, {&#39;term&#39;: &#39;bmi&#39;, &#39;estimate&#39;: 4.6225, &#39;std.error&#39;: 2.1182, &#39;statistic&#39;: 2.1823, &#39;p.value&#39;: 0.04, &#39;nobs&#39;: 25, &#39;df.residual&#39;: 22}]</code></pre>
+</div>
+<div id="pool-pool-results-of-a-fit-given-its-summary-table-mice-3.14.4-or-higher-2" class="section level5">
+<h5><strong><code>/pool</code></strong>: Pool results of a fit given its
+summary table (mice 3.14.4 or higher)</h5>
+<pre class="python"><code>## /pool
+
+# Add path
+path_pool = &#39;/pool&#39;
+
+# Combine the url
+pool = urljoin(host,path_pool)
+
+# Add headers
+headers = {&#39;Accept&#39;: &#39;application/json&#39;}
+
+# Add payload
+params_pool = {&quot;data&quot;: result_fit}
+
+# Encode the payload as a JSON string and then URL-encode the entire payload
+payload_pool = json.dumps(params_pool)
+url_encoded_payload_pool = urllib.parse.quote(payload_pool)
+
+# Construct the complete URL
+pool_url = f&quot;{pool}?payload={url_encoded_payload_pool}&quot;
+
+# Make a request using the complete URL
+response_pool = requests.get(pool_url)
+
+# Get the response body
+json_response_pool = response_pool.json()
+
+# Access the &quot;result&quot; part
+result_pool = json_response_pool.get(&quot;result&quot;, [])
+result_pool</code></pre>
+<pre><code>## [{&#39;term&#39;: &#39;(Intercept)&#39;, &#39;m&#39;: 1, &#39;estimate&#39;: 18.6899, &#39;ubar&#39;: 4601.126, &#39;dfcom&#39;: 22}, {&#39;term&#39;: &#39;age&#39;, &#39;m&#39;: 1, &#39;estimate&#39;: 32.13, &#39;ubar&#39;: 108.4993, &#39;dfcom&#39;: 22}, {&#39;term&#39;: &#39;bmi&#39;, &#39;m&#39;: 1, &#39;estimate&#39;: 4.6225, &#39;ubar&#39;: 4.4868, &#39;dfcom&#39;: 22}]</code></pre>
+</div>
+<div id="data-upload-data-1" class="section level5">
+<h5><strong><code>/data</code></strong>: Upload data</h5>
+<p>Uploading data to WEBMICE can be done by sending a text file. Suppose
+that <code>../testdata/tempdata.csv</code> is a comma-delimited file
+with data. We may upload it as</p>
+<pre class="python"><code># /data
+
+# Add  path
+path_data = &#39;/data&#39;
+
+# Combine the url
+data_upload = urljoin(host,path_data)
+
+# File path of the csv file
+#root_dir = &quot;~\Github\webmice&quot;
+file_path = os.path.join(&quot;testdata&quot;, &quot;tempdata.csv&quot;)
+#file_path = r&quot;...\testdata\tempdata.csv&quot;
+
+# Construct the files dictionary
+files = {&#39;csvfile&#39;: (file_path, open(file_path, &#39;rb&#39;))}
+
+# Additional headers
+headers = {&#39;accept&#39;: &#39;text/plain&#39;}
+
+# Make the POST request
+response = requests.post(data_upload, files=files, headers=headers)
+
+# Print all response headers
+for key, value in response.headers.items():
+    print(f&quot;{key}: {value}&quot;)</code></pre>
+<pre><code>## Content-type: text/plain
+## Server: RestRserve/1.2.1; Rserve/1.8.13
+## data_token: d08b7175d4060555abc73e3478551c3a
+## Content-length: 0</code></pre>
+<pre class="python"><code># Retrieve the data_token from headers
+data_token = response.headers.get(&#39;data_token&#39;)
+print(data_token)</code></pre>
+<pre><code>## d08b7175d4060555abc73e3478551c3a</code></pre>
+</div>
+<div id="long-impute-built-in-dataset-2" class="section level5">
+<h5><strong><code>/long</code></strong>: Impute built-in dataset</h5>
+<p>This part is exactly the same procedure as the previous one using
+example data (nhanes). The only difference is the data part for the
+payload. We use
+<code>params = {&#39;data&#39;:data_token,&#39;maxit&#39;:2,&#39;m&#39;:1,&#39;seed&#39;:1}</code>
+instead of
+<code>params = {&#39;data&#39;:&#39;nhanes,&#39;maxit&#39;:2,&#39;m&#39;:1,&#39;seed&#39;:1}</code></p>
+<pre class="python"><code>## /long
+
+# Add path
+path_long = &#39;/long&#39;
+
+# Combine the url
+long = urljoin(host,path_long)
+
+# Add headers
+headers = {&#39;Accept&#39;: &#39;application/json&#39;}
+
+# Add payload
+params = {&#39;data&#39;:data_token,&#39;maxit&#39;:2,&#39;m&#39;:1,&#39;seed&#39;:1}
+
+# Encode the payload as a JSON string and then URL-encode the entire payload
+payload = urllib.parse.quote(&#39;{&quot;data&quot;:&quot;%s&quot;,&quot;maxit&quot;:%d,&quot;m&quot;:%d,&quot;seed&quot;:%d}&#39; % (params[&#39;data&#39;], params[&#39;maxit&#39;], params[&#39;m&#39;], params[&#39;seed&#39;]))
+
+# Construct the complete URL
+long_url = f&quot;{long}?payload={payload}&quot;
+
+# Make a request using the complete URL
+response = requests.get(long_url)
+
+# Get the response body
+response.json()</code></pre>
+<pre><code>## {&#39;success&#39;: [True], &#39;result&#39;: [{&#39;...1&#39;: 1, &#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 1}, {&#39;...1&#39;: 2, &#39;age&#39;: 2, &#39;bmi&#39;: 22.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: 2}, {&#39;...1&#39;: 3, &#39;age&#39;: 1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: 3}, {&#39;...1&#39;: 4, &#39;age&#39;: 3, &#39;.imp&#39;: 0, &#39;.id&#39;: 4}, {&#39;...1&#39;: 5, &#39;age&#39;: 1, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 113, &#39;.imp&#39;: 0, &#39;.id&#39;: 5}, {&#39;...1&#39;: 6, &#39;age&#39;: 3, &#39;chl&#39;: 184, &#39;.imp&#39;: 0, &#39;.id&#39;: 6}, {&#39;...1&#39;: 7, &#39;age&#39;: 1, &#39;bmi&#39;: 22.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 118, &#39;.imp&#39;: 0, &#39;.id&#39;: 7}, {&#39;...1&#39;: 8, &#39;age&#39;: 1, &#39;bmi&#39;: 30.1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: 8}, {&#39;...1&#39;: 9, &#39;age&#39;: 2, &#39;bmi&#39;: 22, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 0, &#39;.id&#39;: 9}, {&#39;...1&#39;: 10, &#39;age&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: 10}, {&#39;...1&#39;: 11, &#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 11}, {&#39;...1&#39;: 12, &#39;age&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: 12}, {&#39;...1&#39;: 13, &#39;age&#39;: 3, &#39;bmi&#39;: 21.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 206, &#39;.imp&#39;: 0, &#39;.id&#39;: 13}, {&#39;...1&#39;: 14, &#39;age&#39;: 2, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 2, &#39;chl&#39;: 204, &#39;.imp&#39;: 0, &#39;.id&#39;: 14}, {&#39;...1&#39;: 15, &#39;age&#39;: 1, &#39;bmi&#39;: 29.6, &#39;hyp&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 15}, {&#39;...1&#39;: 16, &#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 16}, {&#39;...1&#39;: 17, &#39;age&#39;: 3, &#39;bmi&#39;: 27.2, &#39;hyp&#39;: 2, &#39;chl&#39;: 284, &#39;.imp&#39;: 0, &#39;.id&#39;: 17}, {&#39;...1&#39;: 18, &#39;age&#39;: 2, &#39;bmi&#39;: 26.3, &#39;hyp&#39;: 2, &#39;chl&#39;: 199, &#39;.imp&#39;: 0, &#39;.id&#39;: 18}, {&#39;...1&#39;: 19, &#39;age&#39;: 1, &#39;bmi&#39;: 35.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 218, &#39;.imp&#39;: 0, &#39;.id&#39;: 19}, {&#39;...1&#39;: 20, &#39;age&#39;: 3, &#39;bmi&#39;: 25.5, &#39;hyp&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: 20}, {&#39;...1&#39;: 21, &#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 21}, {&#39;...1&#39;: 22, &#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 0, &#39;.id&#39;: 22}, {&#39;...1&#39;: 23, &#39;age&#39;: 1, &#39;bmi&#39;: 27.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 131, &#39;.imp&#39;: 0, &#39;.id&#39;: 23}, {&#39;...1&#39;: 24, &#39;age&#39;: 3, &#39;bmi&#39;: 24.9, &#39;hyp&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 24}, {&#39;...1&#39;: 25, &#39;age&#39;: 2, &#39;bmi&#39;: 27.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 186, &#39;.imp&#39;: 0, &#39;.id&#39;: 25}, {&#39;...1&#39;: 1, &#39;age&#39;: 1, &#39;bmi&#39;: 30.1, &#39;hyp&#39;: 1, &#39;chl&#39;: 284, &#39;.imp&#39;: 1, &#39;.id&#39;: 1}, {&#39;...1&#39;: 2, &#39;age&#39;: 2, &#39;bmi&#39;: 22.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: 2}, {&#39;...1&#39;: 3, &#39;age&#39;: 1, &#39;bmi&#39;: 22, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: 3}, {&#39;...1&#39;: 4, &#39;age&#39;: 3, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 204, &#39;.imp&#39;: 1, &#39;.id&#39;: 4}, {&#39;...1&#39;: 5, &#39;age&#39;: 1, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 113, &#39;.imp&#39;: 1, &#39;.id&#39;: 5}, {&#39;...1&#39;: 6, &#39;age&#39;: 3, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 2, &#39;chl&#39;: 184, &#39;.imp&#39;: 1, &#39;.id&#39;: 6}, {&#39;...1&#39;: 7, &#39;age&#39;: 1, &#39;bmi&#39;: 22.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 118, &#39;.imp&#39;: 1, &#39;.id&#39;: 7}, {&#39;...1&#39;: 8, &#39;age&#39;: 1, &#39;bmi&#39;: 30.1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: 8}, {&#39;...1&#39;: 9, &#39;age&#39;: 2, &#39;bmi&#39;: 22, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: 9}, {&#39;...1&#39;: 10, &#39;age&#39;: 2, &#39;bmi&#39;: 22, &#39;hyp&#39;: 2, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: 10}, {&#39;...1&#39;: 11, &#39;age&#39;: 1, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 199, &#39;.imp&#39;: 1, &#39;.id&#39;: 11}, {&#39;...1&#39;: 12, &#39;age&#39;: 2, &#39;bmi&#39;: 27.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: 12}, {&#39;...1&#39;: 13, &#39;age&#39;: 3, &#39;bmi&#39;: 21.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 206, &#39;.imp&#39;: 1, &#39;.id&#39;: 13}, {&#39;...1&#39;: 14, &#39;age&#39;: 2, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 2, &#39;chl&#39;: 204, &#39;.imp&#39;: 1, &#39;.id&#39;: 14}, {&#39;...1&#39;: 15, &#39;age&#39;: 1, &#39;bmi&#39;: 29.6, &#39;hyp&#39;: 1, &#39;chl&#39;: 186, &#39;.imp&#39;: 1, &#39;.id&#39;: 15}, {&#39;...1&#39;: 16, &#39;age&#39;: 1, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 199, &#39;.imp&#39;: 1, &#39;.id&#39;: 16}, {&#39;...1&#39;: 17, &#39;age&#39;: 3, &#39;bmi&#39;: 27.2, &#39;hyp&#39;: 2, &#39;chl&#39;: 284, &#39;.imp&#39;: 1, &#39;.id&#39;: 17}, {&#39;...1&#39;: 18, &#39;age&#39;: 2, &#39;bmi&#39;: 26.3, &#39;hyp&#39;: 2, &#39;chl&#39;: 199, &#39;.imp&#39;: 1, &#39;.id&#39;: 18}, {&#39;...1&#39;: 19, &#39;age&#39;: 1, &#39;bmi&#39;: 35.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 218, &#39;.imp&#39;: 1, &#39;.id&#39;: 19}, {&#39;...1&#39;: 20, &#39;age&#39;: 3, &#39;bmi&#39;: 25.5, &#39;hyp&#39;: 2, &#39;chl&#39;: 229, &#39;.imp&#39;: 1, &#39;.id&#39;: 20}, {&#39;...1&#39;: 21, &#39;age&#39;: 1, &#39;bmi&#39;: 35.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 199, &#39;.imp&#39;: 1, &#39;.id&#39;: 21}, {&#39;...1&#39;: 22, &#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 1, &#39;.id&#39;: 22}, {&#39;...1&#39;: 23, &#39;age&#39;: 1, &#39;bmi&#39;: 27.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 131, &#39;.imp&#39;: 1, &#39;.id&#39;: 23}, {&#39;...1&#39;: 24, &#39;age&#39;: 3, &#39;bmi&#39;: 24.9, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: 24}, {&#39;...1&#39;: 25, &#39;age&#39;: 2, &#39;bmi&#39;: 27.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 186, &#39;.imp&#39;: 1, &#39;.id&#39;: 25}]}</code></pre>
+<pre class="python"><code>json_response = response.json()
+
+# Access the &quot;result&quot; part
+result_part = json_response.get(&quot;result&quot;, [])
+result_part</code></pre>
+<pre><code>## [{&#39;...1&#39;: 1, &#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 1}, {&#39;...1&#39;: 2, &#39;age&#39;: 2, &#39;bmi&#39;: 22.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: 2}, {&#39;...1&#39;: 3, &#39;age&#39;: 1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: 3}, {&#39;...1&#39;: 4, &#39;age&#39;: 3, &#39;.imp&#39;: 0, &#39;.id&#39;: 4}, {&#39;...1&#39;: 5, &#39;age&#39;: 1, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 113, &#39;.imp&#39;: 0, &#39;.id&#39;: 5}, {&#39;...1&#39;: 6, &#39;age&#39;: 3, &#39;chl&#39;: 184, &#39;.imp&#39;: 0, &#39;.id&#39;: 6}, {&#39;...1&#39;: 7, &#39;age&#39;: 1, &#39;bmi&#39;: 22.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 118, &#39;.imp&#39;: 0, &#39;.id&#39;: 7}, {&#39;...1&#39;: 8, &#39;age&#39;: 1, &#39;bmi&#39;: 30.1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 0, &#39;.id&#39;: 8}, {&#39;...1&#39;: 9, &#39;age&#39;: 2, &#39;bmi&#39;: 22, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 0, &#39;.id&#39;: 9}, {&#39;...1&#39;: 10, &#39;age&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: 10}, {&#39;...1&#39;: 11, &#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 11}, {&#39;...1&#39;: 12, &#39;age&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: 12}, {&#39;...1&#39;: 13, &#39;age&#39;: 3, &#39;bmi&#39;: 21.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 206, &#39;.imp&#39;: 0, &#39;.id&#39;: 13}, {&#39;...1&#39;: 14, &#39;age&#39;: 2, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 2, &#39;chl&#39;: 204, &#39;.imp&#39;: 0, &#39;.id&#39;: 14}, {&#39;...1&#39;: 15, &#39;age&#39;: 1, &#39;bmi&#39;: 29.6, &#39;hyp&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 15}, {&#39;...1&#39;: 16, &#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 16}, {&#39;...1&#39;: 17, &#39;age&#39;: 3, &#39;bmi&#39;: 27.2, &#39;hyp&#39;: 2, &#39;chl&#39;: 284, &#39;.imp&#39;: 0, &#39;.id&#39;: 17}, {&#39;...1&#39;: 18, &#39;age&#39;: 2, &#39;bmi&#39;: 26.3, &#39;hyp&#39;: 2, &#39;chl&#39;: 199, &#39;.imp&#39;: 0, &#39;.id&#39;: 18}, {&#39;...1&#39;: 19, &#39;age&#39;: 1, &#39;bmi&#39;: 35.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 218, &#39;.imp&#39;: 0, &#39;.id&#39;: 19}, {&#39;...1&#39;: 20, &#39;age&#39;: 3, &#39;bmi&#39;: 25.5, &#39;hyp&#39;: 2, &#39;.imp&#39;: 0, &#39;.id&#39;: 20}, {&#39;...1&#39;: 21, &#39;age&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 21}, {&#39;...1&#39;: 22, &#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 0, &#39;.id&#39;: 22}, {&#39;...1&#39;: 23, &#39;age&#39;: 1, &#39;bmi&#39;: 27.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 131, &#39;.imp&#39;: 0, &#39;.id&#39;: 23}, {&#39;...1&#39;: 24, &#39;age&#39;: 3, &#39;bmi&#39;: 24.9, &#39;hyp&#39;: 1, &#39;.imp&#39;: 0, &#39;.id&#39;: 24}, {&#39;...1&#39;: 25, &#39;age&#39;: 2, &#39;bmi&#39;: 27.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 186, &#39;.imp&#39;: 0, &#39;.id&#39;: 25}, {&#39;...1&#39;: 1, &#39;age&#39;: 1, &#39;bmi&#39;: 30.1, &#39;hyp&#39;: 1, &#39;chl&#39;: 284, &#39;.imp&#39;: 1, &#39;.id&#39;: 1}, {&#39;...1&#39;: 2, &#39;age&#39;: 2, &#39;bmi&#39;: 22.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: 2}, {&#39;...1&#39;: 3, &#39;age&#39;: 1, &#39;bmi&#39;: 22, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: 3}, {&#39;...1&#39;: 4, &#39;age&#39;: 3, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 204, &#39;.imp&#39;: 1, &#39;.id&#39;: 4}, {&#39;...1&#39;: 5, &#39;age&#39;: 1, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 113, &#39;.imp&#39;: 1, &#39;.id&#39;: 5}, {&#39;...1&#39;: 6, &#39;age&#39;: 3, &#39;bmi&#39;: 20.4, &#39;hyp&#39;: 2, &#39;chl&#39;: 184, &#39;.imp&#39;: 1, &#39;.id&#39;: 6}, {&#39;...1&#39;: 7, &#39;age&#39;: 1, &#39;bmi&#39;: 22.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 118, &#39;.imp&#39;: 1, &#39;.id&#39;: 7}, {&#39;...1&#39;: 8, &#39;age&#39;: 1, &#39;bmi&#39;: 30.1, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: 8}, {&#39;...1&#39;: 9, &#39;age&#39;: 2, &#39;bmi&#39;: 22, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: 9}, {&#39;...1&#39;: 10, &#39;age&#39;: 2, &#39;bmi&#39;: 22, &#39;hyp&#39;: 2, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: 10}, {&#39;...1&#39;: 11, &#39;age&#39;: 1, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 199, &#39;.imp&#39;: 1, &#39;.id&#39;: 11}, {&#39;...1&#39;: 12, &#39;age&#39;: 2, &#39;bmi&#39;: 27.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 187, &#39;.imp&#39;: 1, &#39;.id&#39;: 12}, {&#39;...1&#39;: 13, &#39;age&#39;: 3, &#39;bmi&#39;: 21.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 206, &#39;.imp&#39;: 1, &#39;.id&#39;: 13}, {&#39;...1&#39;: 14, &#39;age&#39;: 2, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 2, &#39;chl&#39;: 204, &#39;.imp&#39;: 1, &#39;.id&#39;: 14}, {&#39;...1&#39;: 15, &#39;age&#39;: 1, &#39;bmi&#39;: 29.6, &#39;hyp&#39;: 1, &#39;chl&#39;: 186, &#39;.imp&#39;: 1, &#39;.id&#39;: 15}, {&#39;...1&#39;: 16, &#39;age&#39;: 1, &#39;bmi&#39;: 28.7, &#39;hyp&#39;: 1, &#39;chl&#39;: 199, &#39;.imp&#39;: 1, &#39;.id&#39;: 16}, {&#39;...1&#39;: 17, &#39;age&#39;: 3, &#39;bmi&#39;: 27.2, &#39;hyp&#39;: 2, &#39;chl&#39;: 284, &#39;.imp&#39;: 1, &#39;.id&#39;: 17}, {&#39;...1&#39;: 18, &#39;age&#39;: 2, &#39;bmi&#39;: 26.3, &#39;hyp&#39;: 2, &#39;chl&#39;: 199, &#39;.imp&#39;: 1, &#39;.id&#39;: 18}, {&#39;...1&#39;: 19, &#39;age&#39;: 1, &#39;bmi&#39;: 35.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 218, &#39;.imp&#39;: 1, &#39;.id&#39;: 19}, {&#39;...1&#39;: 20, &#39;age&#39;: 3, &#39;bmi&#39;: 25.5, &#39;hyp&#39;: 2, &#39;chl&#39;: 229, &#39;.imp&#39;: 1, &#39;.id&#39;: 20}, {&#39;...1&#39;: 21, &#39;age&#39;: 1, &#39;bmi&#39;: 35.3, &#39;hyp&#39;: 1, &#39;chl&#39;: 199, &#39;.imp&#39;: 1, &#39;.id&#39;: 21}, {&#39;...1&#39;: 22, &#39;age&#39;: 1, &#39;bmi&#39;: 33.2, &#39;hyp&#39;: 1, &#39;chl&#39;: 229, &#39;.imp&#39;: 1, &#39;.id&#39;: 22}, {&#39;...1&#39;: 23, &#39;age&#39;: 1, &#39;bmi&#39;: 27.5, &#39;hyp&#39;: 1, &#39;chl&#39;: 131, &#39;.imp&#39;: 1, &#39;.id&#39;: 23}, {&#39;...1&#39;: 24, &#39;age&#39;: 3, &#39;bmi&#39;: 24.9, &#39;hyp&#39;: 1, &#39;chl&#39;: 238, &#39;.imp&#39;: 1, &#39;.id&#39;: 24}, {&#39;...1&#39;: 25, &#39;age&#39;: 2, &#39;bmi&#39;: 27.4, &#39;hyp&#39;: 1, &#39;chl&#39;: 186, &#39;.imp&#39;: 1, &#39;.id&#39;: 25}]</code></pre>
+<p>For <code>/fit</code> and <code>/pool</code> parts, follow the same
+steps using the example data. ##### <strong><code>/fit</code></strong>:
+Some predifined fits</p>
+<pre class="python"><code>## /fit
+
+# Add path
+path_fit = &#39;/fit&#39;
+
+# Combine the url
+fit = urljoin(host,path_fit)
+
+# Add headers
+headers = {&#39;Accept&#39;: &#39;application/json&#39;}
+
+# Add payload
+params_fit = {
+    &quot;data&quot;: result_part,
+    &quot;model&quot;: [&quot;lm&quot;],
+    &quot;formula&quot;: [&quot;chl ~ age + bmi&quot;]
+}
+# Encode the payload as a JSON string and then URL-encode the entire payload
+payload_fit = json.dumps(params_fit)
+url_encoded_payload_fit = urllib.parse.quote(payload_fit)
+
+# Construct the complete URL
+fit_url = f&quot;{fit}?payload={url_encoded_payload_fit}&quot;
+
+# Make a request using the complete URL
+response_fit = requests.get(fit_url)
+
+# Get the response body
+json_response_fit = response_fit.json()
+
+# Access the &quot;result&quot; part
+result_fit = json_response_fit.get(&quot;result&quot;, [])
+result_fit</code></pre>
+<pre><code>## [{&#39;term&#39;: &#39;(Intercept)&#39;, &#39;estimate&#39;: 2.1423, &#39;std.error&#39;: 57.5893, &#39;statistic&#39;: 0.0372, &#39;p.value&#39;: 0.9707, &#39;nobs&#39;: 25, &#39;df.residual&#39;: 22}, {&#39;term&#39;: &#39;age&#39;, &#39;estimate&#39;: 32.8323, &#39;std.error&#39;: 9.5736, &#39;statistic&#39;: 3.4295, &#39;p.value&#39;: 0.0024, &#39;nobs&#39;: 25, &#39;df.residual&#39;: 22}, {&#39;term&#39;: &#39;bmi&#39;, &#39;estimate&#39;: 5.3573, &#39;std.error&#39;: 1.7743, &#39;statistic&#39;: 3.0194, &#39;p.value&#39;: 0.0063, &#39;nobs&#39;: 25, &#39;df.residual&#39;: 22}]</code></pre>
+</div>
+<div id="pool-pool-results-of-a-fit-given-its-summary-table-mice-3.14.4-or-higher-3" class="section level5">
+<h5><strong><code>/pool</code></strong>: Pool results of a fit given its
+summary table (mice 3.14.4 or higher)</h5>
+<pre class="python"><code>## /pool
+
+# Add path
+path_pool = &#39;/pool&#39;
+
+# Combine the url
+pool = urljoin(host,path_pool)
+
+# Add headers
+headers = {&#39;Accept&#39;: &#39;application/json&#39;}
+
+# Add payload
+params_pool = {&quot;data&quot;: result_fit}
+
+# Encode the payload as a JSON string and then URL-encode the entire payload
+payload_pool = json.dumps(params_pool)
+url_encoded_payload_pool = urllib.parse.quote(payload_pool)
+
+# Construct the complete URL
+pool_url = f&quot;{pool}?payload={url_encoded_payload_pool}&quot;
+
+# Make a request using the complete URL
+response_pool = requests.get(pool_url)
+
+# Get the response body
+json_response_pool = response_pool.json()
+
+# Access the &quot;result&quot; part
+result_pool = json_response_pool.get(&quot;result&quot;, [])
+result_pool</code></pre>
+<pre><code>## [{&#39;term&#39;: &#39;(Intercept)&#39;, &#39;m&#39;: 1, &#39;estimate&#39;: 2.1423, &#39;ubar&#39;: 3316.5275, &#39;dfcom&#39;: 22}, {&#39;term&#39;: &#39;age&#39;, &#39;m&#39;: 1, &#39;estimate&#39;: 32.8323, &#39;ubar&#39;: 91.6538, &#39;dfcom&#39;: 22}, {&#39;term&#39;: &#39;bmi&#39;, &#39;m&#39;: 1, &#39;estimate&#39;: 5.3573, &#39;ubar&#39;: 3.1481, &#39;dfcom&#39;: 22}]</code></pre>
+</div>
+</div>
+<div id="bash" class="section level4">
+<h4><strong>bash</strong></h4>
+<p>We use the <code>curl</code> Linux command. If needed, on Ubuntu
+install <code>curl</code> as</p>
+<pre class="bash"><code>sudo apt update
+sudo apt -y install curl</code></pre>
+<div id="version-obtain-version-information-2" class="section level5">
+<h5><strong><code>/version</code></strong>: Obtain version
+information</h5>
+<p>Let’s find out the WEBMICE version number. We first illustrate a
+method that makes two requests to the server.</p>
+<p>The following <code>bash</code> commands call the
+<code>/version</code> API end point with a GET request, and stores the
+response in file <code>resp</code>.</p>
+<p>The response to the request consists of a set of URLs created on the
+server, each of which contains details on the response.</p>
+<pre class="bash"><code>echo http://localhost:8080 &gt; .host
+
+curl \
+ -X GET &quot;$(cat .host)/version&quot; \
+ -H &quot;accept: text/plain&quot; \
+ -o resp \
+
+cat resp</code></pre>
+</div>
+<div id="exampledata-obtain-example-data" class="section level5">
+<h5><strong><code>/exampledata</code></strong>: Obtain example data</h5>
+<p>The R package <code>mice</code> contains a few built-in datasets (See
+<a href="https://amices.org/mice/reference/index.html#datasets" class="uri">https://amices.org/mice/reference/index.html#datasets</a>).
+These datasets can be imputed and analysed directly on the server. This
+is to get example data of <code>nhanes</code></p>
+<pre class="bash"><code>curl \
+  -X GET &quot;$(cat .host)/exampledata?name=nhanes&quot; \
+  -H &quot;accept: text/json&quot; \
+  -o nhanes.json \
+
+cat nhanes.json</code></pre>
+</div>
+<div id="data-upload-data-2" class="section level5">
+<h5><strong><code>/data</code></strong>: Upload data</h5>
+<p>Uploading data to WEBMICE can be done by sending a text file.</p>
+<p>Suppose that <code>../testdata/tempdata.csv</code> is a
+comma-delimited file with data. We may upload it as: (This part should
+be change to your full local path
+<code>F &quot;csvfile=@fullpath/tempdata.csv;type=text/csv&quot;</code>).</p>
+<p>From this part, we can obtain data_token from the uploaded csv
+file</p>
+<pre class="bash"><code>curl -i \
+  -X POST &quot;$(cat .host)/data&quot; \
+  -H &quot;accept: text/plain&quot; \
+  -H &quot;Content-Type: multipart/form-data&quot; \
+  -F &quot;csvfile=@C:/Users/Zenius/Documents/GitHub/webmice/testdata/tempdata.csv;type=text/csv&quot; \
+  -o response.txt \
+
+cat response.txt
+
+# Get the data_token from headers
+data_token=$(grep -i &#39;^data_token:&#39; response.txt | awk &#39;{print $2}&#39;)
+echo &quot;$data_token&quot;</code></pre>
+<p>The file is uploaded to the server. The <code>data_token</code>
+header may be used for subsequent requests to refer to the uploaded
+data.</p>
+</div>
+<div id="long-obtain-version-information" class="section level5">
+<h5><strong><code>/long</code></strong>: Obtain version information</h5>
+<p>Get the long data for <code>nhanes</code> data</p>
+<pre class="bash"><code>curl -G &quot;$(cat .host)/long&quot; \
+  -H &quot;accept: application/json&quot; \
+  --data-urlencode  &#39;payload={&quot;data&quot;:&quot;nhanes&quot;,&quot;maxit&quot;:2,&quot;m&quot;:1,&quot;seed&quot;:1}&#39; \
+  -o outputlong.json \
+
+cat outputlong.json</code></pre>
+<p>Get the long data for uploaded data using the data_token</p>
+<pre class="bash"><code>curl -G -v &quot;$(cat .host)/long&quot; \
+  -H &quot;accept: application/json&quot; \
+  --data-urlencode &#39;payload={&quot;data&quot;:&quot;&#39;$data_token&#39;&quot;,&quot;maxit&quot;:2,&quot;m&quot;:1,&quot;seed&quot;:1}&#39; \
+  -o longdata.json \
+
+cat longdata.json</code></pre>
+</div>
+<div id="fit-obtain-version-information" class="section level5">
+<h5><strong><code>/fit</code></strong>: Obtain version information</h5>
+<pre class="bash"><code># Extract the result from JSON and remove spaces
+result_long=$(jq -r &#39;.result&#39; outputlong.json | tr -d &#39;[:space:]&#39;)
+
+# Encode the result_long as JSON string and remove spaces
+result_long=$(echo &quot;$result_long&quot; | jq -c -r)
+
+# Construct the payload with the encoded result_long
+payload=&quot;{\&quot;data\&quot;:$result_long,\&quot;model\&quot;:[\&quot;lm\&quot;],\&quot;formula\&quot;:[\&quot;chl~age+bmi\&quot;]}&quot;
+
+# Use the payload in the curl command
+curl -G -v &quot;$(cat .host)/fit&quot; \
+  -H &quot;accept: application/json&quot; \
+  --data-urlencode &quot;payload=$payload&quot; \
+  -o outputfit.json
+</code></pre>
+</div>
+<div id="pool-obtain-version-information" class="section level5">
+<h5><strong><code>/pool</code></strong>: Obtain version information</h5>
+<pre class="bash"><code># Extract the result from JSON and remove spaces
+result_fit=$(jq -r &#39;.result&#39; outputfit.json | tr -d &#39;[:space:]&#39;)
+
+# Encode the result_long as JSON string and remove spaces
+result_fit=$(echo &quot;$result_fit&quot; | jq -c -r)
+
+# Construct the payload with the encoded result_long
+payload=&quot;{\&quot;data\&quot;:$result_fit}&quot;
+
+# Use the payload in the curl command
+curl -G -v &quot;$(cat .host)/pool&quot; \
+  -H &quot;accept: application/json&quot; \
+  --data-urlencode &quot;payload=$payload&quot; \
+  -o outputpool.json</code></pre>
+</div>
+</div>
+</div>
+<div id="section-1" class="section level3 unnumbered">
+<h3 class="unnumbered"></h3>
 </div>
 </div>
 

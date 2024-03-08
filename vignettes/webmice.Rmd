@@ -7,6 +7,7 @@ date: "`r Sys.Date()`"
   
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+knitr::opts_knit$set(root.dir = "~/Github/webmice")
 ```
 
 ## Overview
@@ -208,7 +209,8 @@ ret_pool$result
 Uploading data to WEBMICE can be done by sending a text file. Suppose that `../testdata/tempdata.csv` is a comma-delimited file with data. We may upload it as
 
 ```{r upload_r, eval = TRUE}
-input <- curl::form_file(".../testdata/tempdata.csv", type = "text/csv")
+file_path <- file.path("testdata", "tempdata.csv")
+input <- curl::form_file(file_path, type = "text/csv")
 #input <- curl::form_file("testdata/tempdata.csv", type = "text/csv")
 resp <- request(host) |> 
   req_url_path("/data") |> 
@@ -284,6 +286,7 @@ from urllib.parse import urljoin
 import urllib.parse
 import json
 import re
+import os
 
 # Specify the url for host
 host = 'http://localhost:8080'
@@ -451,7 +454,9 @@ path_data = '/data'
 data_upload = urljoin(host,path_data)
 
 # File path of the csv file
-file_path = r"...\testdata\tempdata.csv"
+#root_dir = "~\Github\webmice"
+file_path = os.path.join("testdata", "tempdata.csv")
+#file_path = r"...\testdata\tempdata.csv"
 
 # Construct the files dictionary
 files = {'csvfile': (file_path, open(file_path, 'rb'))}
