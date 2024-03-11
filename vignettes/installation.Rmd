@@ -1,0 +1,66 @@
+---
+title: WEBMICE - Installation
+subtitle: webmice 0.0.1 (December 2023)
+author: 
+output:
+  html_document:
+  number_sections: false
+  self-contained: true
+theme: united
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Step-by-step to start the API
+
+### Clone Repository
+
+1. Open the WEBMICE repository on GitHub [`webmice`](https://github.com/amices/webmice).
+2. Download the GitHub desktop [here](https://desktop.github.com/) and install it. Reboot your PC once it is completely installed.
+3. Clone the repository to your local machine by clicking the green button `Code` then choose `Open with GitHub Desktop`.
+![Clone the repository](img/clone-github.png)
+4. Open RStudio and go to `Terminal` to run `Docker code` in README file with Docker heading. However, you should setup the Docker first.
+5. As an alternative, run this code in `Terminal`.
+```
+export WEBMICE_LOC="<location of webmice repo>"
+cd "<location of webmice repo>"
+Rscript webmice.R
+```
+
+### Docker Setup
+
+1. Set up Docker Desktop by installing it from this [web](https://docs.docker.com/get-docker/). Docker Desktop requires a minimum of 2 GB of RAM and 20 GB of disk space to run.
+2. In Windows, you might need to install WSL2. Open the command prompt and type `wsl --install` or if you already installed it, check for the updates `wsl --update`.
+3. Do not close your Docker Desktop when trying to run below code. Keep in mind that the Dockerfile is located in the same path as your working directory.
+```
+docker build -t webmice -f docker/Dockerfile .
+docker run -it -p 8080:8080 -v </path/to/local/datafolder>:/home/webmice/testdata webmice
+# get a shell inside of the docker image for debugging
+docker exec -it webmice bash
+```
+Change `</path/to/local/datafolder>`to your local path. You only need the `-v </path/to/local/datafolder>:/home/webmice/testdata` flag if you want to make some of your local data known to the docker image to use them as input data for the HTTP API. 
+
+### Open the API
+1. Go to your browser
+2. Open <http://localhost:8080/doc/>
+3. Try it out!
+
+#### Primary WEBMICE user functionality
+
+  | Verb  | API Endpoint          | Description                                | Maps to `mice` function |
+  |:------|:-------------------------- |:------------------------------------------ |:-------------------------|
+  | GET  | `/version`       | Get the `mice`'s version                          | `utils::packageVersion("mice")`          |
+  | GET  | `/exampledata`       | Get example of an incomplete data (`nhanes` and `nhanes2`)            | `mice::nhanes`  or `mice::nhanes2`   |
+  | POST  | `/data`       | Upload an incomplete data in CSV format                          |          |
+  | GET  | `/long`       | Impute missing data            | `mice::mice()`    
+  |
+  | GET  | `/fit`       | Get some predefined fit value                          | `mice::getfit(with())`        |
+  | GET  | `/pool`       | Pool results of a fit given its summary table            | `mice::pool()`    
+  |
+
+4. If you want to upload your own data, you can upload your dataset in Swagger API. The variables must be less than 50 variables (number of columns) and in CSV format.
+

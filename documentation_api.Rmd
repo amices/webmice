@@ -1,0 +1,189 @@
+---
+title: "documentation_api"
+author: "Solichatus Zahroh"
+date: "2023-12-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Start the REST API
+
+### Docker Setup
+
+1. Set up Docker Desktop by installing it from this web https://docs.docker.com/get-docker/. Docker Desktop requires a minimum of 2 GB of RAM and 20 GB of disk space to run.
+2. In Windows, you might need to install WSL2. Open the command prompt and type `wsl --install` or if you already installed it, check for the updates `wsl --update`.
+3. Keep open your Docker Desktop when trying to run below code. Keep in mind that the Dockerfile is located in the same path as your working directory.
+```
+docker build -t webmice -f docker/Dockerfile .
+docker run -it -p 8080:8080 -v  C:/Users/Zenius/Documents/GitHub/webmice:/home/webmice/testdata webmice
+# get a shell inside of the docker image for debugging
+docker exec -it webmice bash
+```
+Change `</path/to/local/datafolder>`to your local path. You only need the `-v </path/to/local/datafolder>:/home/webmice/testdata` flag if you want to make some of your local data known to the docker image to use them as input data for the HTTP API. 
+
+### Testing the Swagger
+You can test to upload your dataset in Swagger API. The variables must be less than 50 variables (number of columns) and in CSV format.
+
+##### **`/version`**: Obtain version information
+
+Let us first check whether WEBMICE is running. The following code makes a simple request to WEBMICE to see whether it is alive and to return the version number of the underlying `mice` R package. We illustrate both requests in `R` and in `bash`.
+
+We first need to install and load packages.
+
+```{r httr, eval=FALSE}
+#install.packages(c("httr2", "jsonlite"))
+```
+```{r load}
+library(httr2)
+library(jsonlite)
+```
+
+Let's find out the WEBMICE version number. In this document, we define the server that hosts WEBMICE as follows, and optionally create a variable `.host` for use in the bash terminal.
+
+```{r host}
+host <- "http://localhost:8080"
+```
+
+We first illustrate a method that makes a request to the server. The following command prepares a GET request `req` to the `/version` end point:
+
+```{r req_version}
+req <- request(host) |> 
+  req_headers(accept = "text/plain") |> 
+  req_url_path("/version")
+req
+```
+
+The next step sends the request to the API server, and stores the result in the server response `resp`:
+
+```{r call_version}
+resp <- req_perform(req)
+resp
+```
+
+The next step parses the `resp` object and converts the body into an R list:
+
+```{r ret_version}
+ret <- resp |> 
+  resp_body_string() |> 
+  fromJSON()
+ret
+```
+
+See the documentation of the `httr2` package for other operations and extractions. One may chain the above operations as:
+
+```{r}
+request(host) |> 
+  req_headers(accept = "text/plain") |> 
+  req_url_path("/version") |> 
+  req_perform() |> 
+  resp_body_string() |> 
+  fromJSON()
+```
+
+##### **`/data`**: Upload data
+
+Uploading data to WEBMICE can be done by sending a text file. Suppose that `../testdata/tempdata.csv` is a comma-delimited file with data. We may upload it as
+```{r upload_r, eval = TRUE}
+req <- request(host) |> 
+  req_url_path("/data") |> 
+  req_headers(accept = "text/plain", 
+              `content-type` = "multipart/form-data") |>
+  req_body_multipart(csvfile = curl::form_file("C:/Users/Zenius/Documents/GitHub/webmice/testdata/nhanes.csv"))
+resp <- req_perform(req, verbosity = 3)
+token <- resp$headers$data_token
+resp_headers(resp)
+resp_header_exists(resp, "data_token")
+```
+
+The file is uploaded to the server. The `data_token` header may be used for subsequent requests to refer to the uploaded data.
+
+##### **`/long`**: Impute missing data 
+`imp <- mice(nhanes, maxit = 2, m = 2, seed = 1)`
+
+Impute missing data from the uploaded file.
+
+```{r upload_r, eval = TRUE}
+library(RCurl)
+# Create the payload object
+payload <- list(data = "nhanes", maxit = 2, m = 2, seed = 1)
+
+# Encode the payload object to JSON
+payload_json <- jsonlite::toJSON(payload, auto_unbox =  TRUE)
+
+# Create the full URL
+full_url <- paste(host, "/long","?payload=", curlEscape((payload_json)), sep = "")
+
+long <- request("full_url") |> 
+  req_headers(accept = "text/plain", 
+              `content-type` = "multipart/form-data") |>
+  req_body_multipart(input = resp$headers$data_token)
+resp_long <- req_perform(long, verbosity = 3) |>
+  resp_body_string() |> 
+  fromJSON()
+```
+
+Change the `data` to `data_token` from the uploaded data.
+
+##### **`/fit`**: Fit the model
+`fit <- with(data = imp, exp = lm(chl ~ age + bmi))`
+```{r upload_r, eval = TRUE}
+library(RCurl)
+# Create the payload object
+payload_fit <- list(data =resp_long$result, model = lm, formula = chl~age+bmi){"data": [{".imp":1,".id":1,"age":1,"bmi":30.1,"hyp":1,"chl":187}], "model":["lm"], "formula":["chl ~ age + bmi"]}
+
+# Encode the payload object to JSON
+payload_json_fit <- jsonlite::toJSON(payload_fit, auto_unbox =  TRUE)
+
+# Create the full URL
+full_url_fit <- paste(host, "/fit","?payload=", curlEscape((payload_json_fit)), sep = "")
+
+fit <- request("full_url_fit") |> 
+  req_headers(accept = "text/plain", 
+              `content-type` = "multipart/form-data") |>
+  req_body_multipart(input = resp$headers$data_token)
+resp_fit <- req_perform(fit, verbosity = 3) |>
+  resp_body_string() |> 
+  fromJSON()
+```
+Get the fitted values of the imputed file.
+
+##### **`/pool`**: Pool the results of fitting a model to the imputed data. 
+`summary((fit))`
+
+Get summary of the fitted model.
+
+```{r upload_r, eval = TRUE}
+library(RCurl)
+# Create the payload object
+payload_fit <- list(data =resp_fit$result, model = lm, formula = chl~age+bmi){"data": [{".imp":1,".id":1,"age":1,"bmi":30.1,"hyp":1,"chl":187}], "model":["lm"], "formula":["chl ~ age + bmi"]}
+
+# Encode the payload object to JSON
+payload_json_fit <- jsonlite::toJSON(payload_fit, auto_unbox =  TRUE)
+
+# Create the full URL
+full_url_fit <- paste(host, "/fit","?payload=", curlEscape((payload_json_fit)), sep = "")
+
+fit <- request("full_url_fit") |> 
+  req_headers(accept = "text/plain", 
+              `content-type` = "multipart/form-data") |>
+  req_body_multipart(input = resp$headers$data_token)
+resp_fit <- req_perform(fit, verbosity = 3) |>
+  resp_body_string() |> 
+  fromJSON()
+```
+
+
+### Get the Version of the API
+```{r}
+# Get version
+library(httr)
+host <- "http://localhost:8080/"
+path <- "version"
+url <- parse_url(host)
+url <- modify_url(url, path = file.path(url$path, path))
+r <- GET(url)
+fromJSON(content(r, type = "text", encoding = "UTF-8"))
+```
