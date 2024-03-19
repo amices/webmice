@@ -29,7 +29,7 @@ WEBMICE is a RESTful API that runs on a (remote) host. In principle, any `HTTP` 
   | GET  | `/version`       | Get the `mice`'s version                          | `utils::packageVersion("mice")`          |
   | GET  | `/exampledata`       | Get example of an incomplete data (`nhanes` and `nhanes2`)            | `mice::nhanes`  or `mice::nhanes2`   |
   | POST  | `/data`       | Upload an incomplete data in CSV format                          |          |
-  | GET  | `/long`       | Impute missing data            | `mice::mice()`    
+  | GET  | `/long`       | Impute missing data            | `complete(mice())`    
   |
   | GET  | `/fit`       | Get some predefined fit value                          | `mice::getfit(with())`        |
   | GET  | `/pool`       | Pool results of a fit given its summary table            | `mice::pool()`    
